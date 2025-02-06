@@ -30,26 +30,36 @@ def draw_image_from_list(vector_image, stroke_idx, side=256):
     raster_image = scipy.ndimage.binary_dilation(raster_image)*255.0
     return Image.fromarray(raster_image).convert('RGB')
 
-def draw_image(vector_image, side=256):
-    raster_image = np.zeros((int(side), int(side)), dtype=np.float32)
-    initX, initY = int(vector_image[0, 0]), int(vector_image[0, 1])
-    pixel_length = 0
+def draw_image(vector_images, side=256, steps=25):
+    for vector_image in vector_images:
+        pixel_length = 0
+        sample_freq = list(np.round(np.linspace(0,  len(vector_image), steps)[1:]))
+        sample_len = []
+        raster_images = []
+        raster_image = np.zeros((int(side), int(side)), dtype=np.float32)
+        initX, initY = int(vector_image[0, 0]), int(vector_image[0, 1])
+        
+        for i in range(0, len(vector_image)):
+            if i > 0: 
+                if vector_image[i-1, 2] == 1:
+                    initX, initY = int(vector_image[i, 0]), int(vector_image[i, 1])
 
-    for i in range(0, len(vector_image)):
-        if i > 0:
-            if vector_image[i - 1, 2] == 1:
-                initX, initY = int(vector_image[i, 0]), int(vector_image[i, 1])
+            cordList = list(bresenham(initX, initY, int(vector_image[i,0]), int(vector_image[i,1])))
+            pixel_length += len(cordList)
 
-        cordList = list(bresenham(initX, initY, int(vector_image[i, 0]), int(vector_image[i, 1])))
-        pixel_length += len(cordList)
+            for cord in cordList:
+                if 0 < cord[0] < side and 0 < cord[1] < side:
+                    raster_image[cord[1], cord[0]] = 255.0
+            initX , initY = int(vector_image[i,0]), int(vector_image[i,1])
 
-        for cord in cordList:
-            if (cord[0] > 0 and cord[1] > 0) and (cord[0] < side and cord[1] < side):
-                raster_image[cord[1], cord[0]] = 255.0
-        initX, initY = int(vector_image[i, 0]), int(vector_image[i, 1])
+            if i in sample_freq:
+                raster_images.append(scipy.ndimage.binary_dilation(raster_image) * 255.0)
+                sample_len.append(pixel_length)
 
-    raster_image = scipy.ndimage.binary_dilation(raster_image) * 255.0
-    return raster_image
+        raster_images.append(scipy.ndimage.binary_dilation(raster_image) * 255.0)
+        sample_len.append(pixel_length)
+
+    return raster_images, sample_len
 
 def preprocess(sketch_points, side=256):
     sketch_points = sketch_points.astype(np.float32)
@@ -60,5 +70,5 @@ def preprocess(sketch_points, side=256):
 
 def rasterize_sketch(sketch_points):
     sketch_points = preprocess(sketch_points)
-    raster_images = draw_image(sketch_points)
+    raster_images, _ = draw_image(sketch_points)
     return raster_images
