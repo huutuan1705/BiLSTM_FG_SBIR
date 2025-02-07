@@ -24,5 +24,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
+        sketch_features = self.sample_embedding_network(batch['sketch_imgs'].to(device))
+        
+        bilstm = BiLSTM(input_size=sketch_features.shape[1], )
         
         
