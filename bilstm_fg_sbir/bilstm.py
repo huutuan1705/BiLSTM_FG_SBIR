@@ -30,4 +30,4 @@ class BiLSTM(nn.Module):
 # model = BiLSTM(input_size=2048, num_layers=1, output_size=64, bidirectional=True)
 # output = model(x)
 # output = output
-# print(output.shape) 
+# print(output.shape) # [1, 64]
