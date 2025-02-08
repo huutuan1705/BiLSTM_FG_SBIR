@@ -6,7 +6,10 @@ if __name__ == "__main__":
     parsers.add_argument('--backbone_name', type=str, default='InceptionV3', help='VGG16/InceptionV3/Resnet50')
     parsers.add_argument('--pool_method', type=str, default='AdaptiveAvgPool2d',
                         help='AdaptiveMaxPool2d / AdaptiveAvgPool2d / AvgPool2d')
-    parsers.add_argument('--output_backbone_size', type=int, default=2048)
+    parsers.add_argument('--output_size', type=int, default=64)
+    parsers.add_argument('--num_layers', type=int, default=1)
+    parsers.add_argument('--num_hidden_layers', type=int, default=512)
+    parsers.add_argument('--bidirectional', type=bool, default=True)
     parsers.add_argument('--root_dir', type=str, default='./../')
     parsers.add_argument('--batch_size', type=int, default=16)
     parsers.add_argument('--threads', type=int, default=4)

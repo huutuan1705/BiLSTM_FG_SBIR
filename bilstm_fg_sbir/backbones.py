@@ -60,7 +60,6 @@ class InceptionV3(nn.Module):
         self.Mixed_7b = backbone.Mixed_7b
         self.Mixed_7c = backbone.Mixed_7c
         self.pool_method =  nn.AdaptiveMaxPool2d(1) # as default
-        # self.output_size = args.output_backbone_size
 
     def forward(self, x):
         # N x 3 x 299 x 299
@@ -102,9 +101,6 @@ class InceptionV3(nn.Module):
          
         attention = AttentionImage(input_size=x.shape[1], hidden_layer=x.shape[1])
         output, _ = attention(x)
-        # output = torch.flatten(output, start_dim=1)
-        # output = nn.Linear(output.shape[1], self.output_size)(output)
-        # output = nn.Linear(output.shape[1], 2048)(output)
         
         return output
     
