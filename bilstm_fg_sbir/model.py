@@ -26,6 +26,22 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
         sketch_features = self.sample_embedding_network(batch['sketch_imgs'].to(device))
         
-        bilstm = BiLSTM(input_size=sketch_features.shape[1], )
+        # Linear to get ouput (batch_size, 64)
+        positive_feature = nn.Linear(positive_feature.shape[-1], self.args.output_size)(positive_feature)
+        negative_feature = nn.Linear(negative_feature.shape[-1], self.args.output_size)(negative_feature)
+        
+        bilstm = BiLSTM(input_size=sketch_features.shape[-1], num_layers=self.args.num_layers, 
+                        output_size=self.args.output_size)
+        sketch_features = bilstm(sketch_features)
+        
+        loss = self.loss(sketch_features, positive_feature, negative_feature)
+        loss.backward()
+        self.optimizer.step()
+
+        return loss.item() 
+        
+    def evaluate(self, dataloader_test):
+        self.eval()
+          
         
         

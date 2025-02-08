@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class AttentionImage(nn.Module):
     def __init__(self, input_size, hidden_layer=2048):
@@ -13,6 +14,7 @@ class AttentionImage(nn.Module):
             nn.ReLU(),
             nn.Conv2d(self.attn_hidden_layer, 1, kernel_size=1)
         )
+
         self.softmax = nn.Softmax(dim=1) 
 
     def forward(self, x):
@@ -24,6 +26,9 @@ class AttentionImage(nn.Module):
         x_attn = x * attn_mask  # attention
         x = x + x_attn  # Residual connection
 
+        x = F.adaptive_avg_pool2d(x, (1, 1))
+        x = x.view(x.size(0), -1)
+        
         return x, attn_mask
     
 class AttentionSequence(nn.Module):
@@ -41,9 +46,6 @@ class AttentionSequence(nn.Module):
         self.softmax = nn.Softmax(dim=2)  # Softmax for N dims (sequence_length)
 
     def forward(self, x):
-        """
-        x: Tensor shape (batch_size, N, d) với N=25, d=64
-        """
         if x.dim() == 2:  # If input don't have batch dimension
             x = x.unsqueeze(0)  # add batch dimension => (1, N, d)
 
@@ -58,8 +60,8 @@ class AttentionSequence(nn.Module):
         # return (batch_size, d) and attention weights (batch_size, 1, N)
         return x_weighted, attn_mask  
 
-# input_tensor = torch.randn(25, 64)
-# model = AttentionSequence(input_size=64)
+# input_tensor = torch.randn(25, 2048, 8, 8)
+# model = AttentionImage(input_size=2048)
 # output, attn_mask = model(input_tensor)
 
 # print("Output shape:", output.shape)  # (1, 64)
