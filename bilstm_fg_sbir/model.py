@@ -40,8 +40,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_features.append(sketch_feature)
             
-        sketch_features = torch.stack(sketch_features, dim=0)
-        # Linear to get ouput (batch_size, 64)
+        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 3, 299, 299)
+
         positive_linear = nn.Linear(positive_feature.shape[-1], self.args.output_size).to(device)
         negative_linear = nn.Linear(negative_feature.shape[-1], self.args.output_size).to(device)
         
@@ -51,6 +51,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         bilstm = BiLSTM(input_size=sketch_features.shape[-1], num_layers=self.args.num_layers, 
                         output_size=self.args.output_size).to(device)
         sketch_features = bilstm(sketch_features)
+        
+        print("Sketch feature shape: ", sketch_feature.shape)
+        print("Positive feature shape: ", positive_feature.shape)
+        print("Negative feature shape: ", negative_feature.shape)
         
         loss = self.loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
