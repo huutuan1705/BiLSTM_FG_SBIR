@@ -59,7 +59,7 @@ class FGSBIR_Dataset(Dataset):
             list_sketch_imgs = rasterize_sketch(vector_x)
             if self.on_fly:
                 for sk_img in list_sketch_imgs:
-                    print(np.array(Image.fromarray(sk_img).convert("RGB")).shape)
+                    print(self.train_transform(np.array(Image.fromarray(sk_img).convert("RGB"))).shape)
                     break
                 
                 sketch_imgs = [self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs]
