@@ -30,17 +30,16 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for param in self.sample_embedding_network.parameters():
             param.requires_grad = False
         
-        for imgs in batch['sketch_imgs']:
-            # print(imgs.shape)
-            break
-        
-        sketch_imgs_tensor = torch.stack(batch['sketch_imgs'])
-        # print(sketch_imgs_tensor.shape)
         
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
-        sketch_features = self.sample_embedding_network(sketch_imgs_tensor.to(device))
         
+        sketch_features = torch.FloatTensor().to(device)
+        for data_sketch in batch['sketch_imgs']:
+            sketch_feature = self.sample_embedding_network(data_sketch.to(device))
+            sketch_features = torch.cat((sketch_features, sketch_feature.detach()))
+        
+        print(sketch_features.shape)
         # Linear to get ouput (batch_size, 64)
         positive_linear = nn.Linear(positive_feature.shape[-1], self.args.output_size).to(device)
         negative_linear = nn.Linear(negative_feature.shape[-1], self.args.output_size).to(device)
