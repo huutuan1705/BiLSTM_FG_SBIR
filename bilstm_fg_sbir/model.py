@@ -31,7 +31,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             param.requires_grad = False
         
         for imgs in batch['sketch_imgs']:
-            print(imgs.shape)
+            # print(imgs.shape)
             break
         
         sketch_imgs_tensor = torch.stack(batch['sketch_imgs'])
