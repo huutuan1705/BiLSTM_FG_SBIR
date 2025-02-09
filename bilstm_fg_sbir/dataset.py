@@ -1,4 +1,5 @@
 import os
+import torch
 import pickle
 
 from PIL import Image
@@ -6,6 +7,8 @@ from random import randint
 from torch.utils.data import Dataset
 from utils import get_transform
 from rasterize import rasterize_sketch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class FGSBIR_Dataset(Dataset):
     def __init__(self, args, mode, on_fly=False):
@@ -54,7 +57,7 @@ class FGSBIR_Dataset(Dataset):
             # ========================
             list_sketch_imgs = rasterize_sketch(vector_x)
             if self.on_fly:
-                sketch_imgs = [self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs]
+                sketch_imgs = [self.train_transform(Image.fromarray(sk_img).convert("RGB")).to(device) for sk_img in list_sketch_imgs]
 
             else:
                 sketch_imgs = self.train_transform(Image.fromarray(list_sketch_imgs[-1]).convert("RGB"))
