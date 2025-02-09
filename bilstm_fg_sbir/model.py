@@ -52,6 +52,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         bilstm = BiLSTM(input_size=sketch_features.shape[-1], num_layers=self.args.num_layers, 
                         output_size=self.args.output_size).to(device)
         sketch_features = bilstm(sketch_features)
+        print("Sketch feature shape: ", sketch_features.shape) 
         
         attention_bilstm = AttentionSequence(input_size=sketch_feature.shape[-1])
         sketch_features, _ = attention_bilstm(sketch_features)
