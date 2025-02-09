@@ -52,7 +52,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                         output_size=self.args.output_size).to(device)
         sketch_features = bilstm(sketch_features)
         
-        print("Sketch feature shape: ", sketch_feature.shape)
+        print("Sketch feature shape: ", sketch_features.shape)
         print("Positive feature shape: ", positive_feature.shape)
         print("Negative feature shape: ", negative_feature.shape)
         
