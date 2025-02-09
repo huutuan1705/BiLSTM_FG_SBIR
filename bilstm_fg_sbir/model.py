@@ -30,8 +30,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_features = self.sample_embedding_network(batch['sketch_imgs'].to(device))
         
         # Linear to get ouput (batch_size, 64)
-        positive_feature = nn.Linear(positive_feature.shape[-1], self.args.output_size)(positive_feature).to(device)
-        negative_feature = nn.Linear(negative_feature.shape[-1], self.args.output_size)(negative_feature).to(device)
+        positive_linear = nn.Linear(positive_feature.shape[-1], self.args.output_size).to(device)
+        negative_linear = nn.Linear(negative_feature.shape[-1], self.args.output_size).to(device)
+        
+        positive_feature = positive_linear(positive_feature)
+        negative_feature = negative_linear(negative_feature)
         
         bilstm = BiLSTM(input_size=sketch_features.shape[-1], num_layers=self.args.num_layers, 
                         output_size=self.args.output_size).to(device)
