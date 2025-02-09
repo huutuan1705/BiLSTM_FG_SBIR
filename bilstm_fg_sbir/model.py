@@ -37,10 +37,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor.to(device))
+            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
             print(sketch_feature.shape)
             
-        
+        sketch_features = torch.stack(sketch_features, dim=0)
         # Linear to get ouput (batch_size, 64)
         positive_linear = nn.Linear(positive_feature.shape[-1], self.args.output_size).to(device)
         negative_linear = nn.Linear(negative_feature.shape[-1], self.args.output_size).to(device)
