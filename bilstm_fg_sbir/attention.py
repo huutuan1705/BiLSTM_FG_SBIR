@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class AttentionImage(nn.Module):
     def __init__(self, input_size, hidden_layer=2048):
         super(AttentionImage, self).__init__()  
@@ -18,7 +20,7 @@ class AttentionImage(nn.Module):
         self.softmax = nn.Softmax(dim=1) 
 
     def forward(self, x):
-        attn_mask = self.net(x)  # (batch_size, 1, H, W)
+        attn_mask = self.net(x).to(device)  # (batch_size, 1, H, W)
         attn_mask = attn_mask.view(attn_mask.size(0), -1)  # reshape (batch_size, H*W)
         attn_mask = self.softmax(attn_mask)  # Softmax
         attn_mask = attn_mask.view(x.size(0), 1, x.size(2), x.size(3))  # reshape (batch_size, 1, H, W)
