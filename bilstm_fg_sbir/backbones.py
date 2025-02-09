@@ -101,8 +101,8 @@ class InceptionV3(nn.Module):
         # N x 2048 x 8 x 8
         x = self.Mixed_7c(x)
          
-        attention = AttentionImage(input_size=x.shape[1], hidden_layer=x.shape[1])
-        output, _ = attention(x).to(device)
+        attention = AttentionImage(input_size=x.shape[1], hidden_layer=x.shape[1]).to(device)
+        output, _ = attention(x)
         
         return output
     
