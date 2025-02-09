@@ -20,10 +20,10 @@ class BiLSTM(nn.Module):
         x, _ = self.lstm(x)
         x = self.fc(x)
 
-        attention = AttentionSequence(input_size=x.shape[1], hidden_layer=x.shape[1])
-        output, _ = attention(x)
+        # attention = AttentionSequence(input_size=x.shape[1], hidden_layer=x.shape[1])
+        # output, _ = attention(x)
         
-        return output
+        return x
 
 
 # x = torch.randn(25, 2048)
