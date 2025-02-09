@@ -1,6 +1,7 @@
 import os
 import torch
 import pickle 
+import numpy as np
 
 from PIL import Image
 from random import randint
@@ -58,7 +59,7 @@ class FGSBIR_Dataset(Dataset):
             list_sketch_imgs = rasterize_sketch(vector_x)
             if self.on_fly:
                 for sk_img in list_sketch_imgs:
-                    print(Image.fromarray(sk_img).convert("RGB").shape)
+                    print(np.array(Image.fromarray(sk_img).convert("RGB")).shape)
                     break
                 
                 sketch_imgs = [self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs]
