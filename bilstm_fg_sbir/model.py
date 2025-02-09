@@ -19,7 +19,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.args = args
     
     def test_forward(self, batch):            #  this is being called only during evaluation
-        sketch_feature = self.sample_embedding_network(batch['sketch_img'].to(device))
+        sketch_feature = self.sample_embedding_network(batch['sketch_imgs'].to(device))
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         return sketch_feature.cpu(), positive_feature.cpu()
     
