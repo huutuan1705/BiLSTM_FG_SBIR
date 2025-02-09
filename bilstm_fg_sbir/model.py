@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from backbones import VGG16, ResNet50, InceptionV3
 from bilstm import BiLSTM
+from attention import AttentionSequence
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -52,9 +53,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                         output_size=self.args.output_size).to(device)
         sketch_features = bilstm(sketch_features)
         
-        # print("Sketch feature shape: ", sketch_features.shape)
-        # print("Positive feature shape: ", positive_feature.shape)
-        # print("Negative feature shape: ", negative_feature.shape)
+        attention_bilstm = AttentionSequence(input_size=sketch_feature[-1])
+        sketch_features, _ = attention_bilstm(sketch_features)
+        
+        # print("Sketch feature shape: ", sketch_features.shape) # (48, 25, 64)
+        # print("Positive feature shape: ", positive_feature.shape) # (48, 1, 64)
+        # print("Negative feature shape: ", negative_feature.shape) # (48, 1, 64)
         
         loss = self.loss(sketch_features, positive_feature, negative_feature)
         loss.backward()

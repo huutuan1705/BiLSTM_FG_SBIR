@@ -57,14 +57,14 @@ class AttentionSequence(nn.Module):
         attn_mask = self.softmax(attn_mask)  # Softmax normalize attention weights
 
         x_weighted = torch.bmm(attn_mask, x.permute(0, 2, 1))  # (batch_size, 1, N) @ (batch_size, N, d) => (batch_size, 1, d)
-        x_weighted = x_weighted.squeeze(1)  # (batch_size, d)
+        # x_weighted = x_weighted.squeeze(1)  # (batch_size, d)
 
         # return (batch_size, d) and attention weights (batch_size, 1, N)
         return x_weighted, attn_mask  
 
-# input_tensor = torch.randn(25, 2048, 8, 8)
-# model = AttentionImage(input_size=2048)
+# input_tensor = torch.randn(48, 25, 64)
+# model = AttentionSequence(input_size=64)
 # output, attn_mask = model(input_tensor)
 
-# print("Output shape:", output.shape)  # (1, 64)
+# print("Output shape:", output.shape)  # (48, 64)
 # print("Attention mask shape:", attn_mask.shape)  # (1, 1, 25)
