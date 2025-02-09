@@ -45,8 +45,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_linear = nn.Linear(positive_feature.shape[-1], self.args.output_size).to(device)
         negative_linear = nn.Linear(negative_feature.shape[-1], self.args.output_size).to(device)
         
-        positive_feature = positive_linear(positive_feature)
-        negative_feature = negative_linear(negative_feature)
+        positive_feature = positive_linear(positive_feature).unsqueeze(1)
+        negative_feature = negative_linear(negative_feature).unsqueeze(1)
         
         bilstm = BiLSTM(input_size=sketch_features.shape[-1], num_layers=self.args.num_layers, 
                         output_size=self.args.output_size).to(device)
