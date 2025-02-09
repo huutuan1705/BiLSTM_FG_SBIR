@@ -62,9 +62,9 @@ class AttentionSequence(nn.Module):
         # return (batch_size, d) and attention weights (batch_size, 1, N)
         return x_weighted, attn_mask  
 
-# input_tensor = torch.randn(48, 25, 64)
-# model = AttentionSequence(input_size=64)
-# output, attn_mask = model(input_tensor)
+input_tensor = torch.randn(48, 25, 64)
+model = AttentionSequence(input_size=64)
+output, attn_mask = model(input_tensor)
 
-# print("Output shape:", output.shape)  # (48, 64)
-# print("Attention mask shape:", attn_mask.shape)  # (1, 1, 25)
+print("Output shape:", output.shape)  # (48, 64)
+print("Attention mask shape:", attn_mask.shape)  # (1, 1, 25)
