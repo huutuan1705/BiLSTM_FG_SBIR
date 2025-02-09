@@ -1,6 +1,6 @@
 import os
 import torch
-import pickle
+import pickle 
 
 from PIL import Image
 from random import randint
@@ -95,3 +95,4 @@ class FGSBIR_Dataset(Dataset):
             }
             
         return sample
+    
