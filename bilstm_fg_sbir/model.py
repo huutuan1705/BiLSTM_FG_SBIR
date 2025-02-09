@@ -41,6 +41,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features.append(sketch_feature)
         
         print(sketch_features.shape)
+        
         # Linear to get ouput (batch_size, 64)
         positive_linear = nn.Linear(positive_feature.shape[-1], self.args.output_size).to(device)
         negative_linear = nn.Linear(negative_feature.shape[-1], self.args.output_size).to(device)

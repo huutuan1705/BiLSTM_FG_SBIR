@@ -26,8 +26,8 @@ class BiLSTM(nn.Module):
         return x
 
 
-x = torch.randn(48, 25, 2048)
-model = BiLSTM(input_size=2048, num_layers=1, output_size=64, bidirectional=True)
-output = model(x)
-output = output
-print(output.shape) # [48, 25, 64]
+# x = torch.randn(48, 25, 2048)
+# model = BiLSTM(input_size=2048, num_layers=1, output_size=64, bidirectional=True)
+# output = model(x)
+# output = output
+# print(output.shape) # [48, 25, 64]
