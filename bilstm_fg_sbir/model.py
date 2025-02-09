@@ -56,9 +56,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         attention_bilstm = AttentionSequence(input_size=sketch_feature.shape[-1])
         sketch_features, _ = attention_bilstm(sketch_features)
         
-        # print("Sketch feature shape: ", sketch_features.shape) # (48, 1, 64)
-        # print("Positive feature shape: ", positive_feature.shape) # (48, 1, 64)
-        # print("Negative feature shape: ", negative_feature.shape) # (48, 1, 64)
+        print("Sketch feature shape: ", sketch_features.shape) # (48, 1, 64)
+        print("Positive feature shape: ", positive_feature.shape) # (48, 1, 64)
+        print("Negative feature shape: ", negative_feature.shape) # (48, 1, 64)
         
         loss = self.loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
