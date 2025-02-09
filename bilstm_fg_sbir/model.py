@@ -33,7 +33,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
         
-        print(batch['sketch_imgs'].shape)
+        print(len(batch['sketch_imgs']))
         
         sketch_features = []
         for data_sketch in batch['sketch_imgs']:
