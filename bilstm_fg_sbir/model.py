@@ -86,21 +86,21 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     Image_Name.append(sanpled_batch['positive_sample'][i_num])
                     Image_Feature_ALL.append(positive_feature[i_num])
 
-        print("Images:")
-        print(len(Image_Name))
-        for i in range(5):
-            print(Image_Name[i])
+        # print("Images:")
+        # print(len(Image_Name))
+        # for i in range(5):
+        #     print(Image_Name[i])
         
-        print("Sketchs:")
-        for i in range(5):
-            print(Sketch_Name[i])
+        # print("Sketchs:")
+        # for i in range(5):
+        #     print(Sketch_Name[i])
             
         rank = torch.zeros(len(Sketch_Name))
         Image_Feature_ALL = torch.stack(Image_Feature_ALL)
 
         for num, sketch_feature in enumerate(Sketch_Feature_ALL):
             s_name = Sketch_Name[num]
-            print("s_name: ", s_name)
+            # print("s_name: ", s_name)
             sketch_query_name = '_'.join(s_name.split('/')[-1].split('_')[:-1])
             
             if sketch_query_name not in Image_Name:
