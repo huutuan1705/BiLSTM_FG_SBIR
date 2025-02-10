@@ -91,6 +91,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for num, sketch_feature in enumerate(Sketch_Feature_ALL):
             s_name = Sketch_Name[num]
             sketch_query_name = '_'.join(s_name.split('/')[-1].split('_')[:-1])
+            if sketch_query_name not in Image_Name:
+                print(f"⚠️ Warning: {sketch_query_name} not found in Image_Name!")
+                continue
             position_query = Image_Name.index(sketch_query_name)
 
             distance = F.pairwise_distance(sketch_feature.unsqueeze(0), Image_Feature_ALL)
