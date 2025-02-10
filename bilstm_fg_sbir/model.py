@@ -83,7 +83,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
 
             for i_num, positive_name in enumerate(sanpled_batch['positive_path']):
                 if positive_name not in Image_Name:
-                    Image_Name.append(sanpled_batch['positive_path'][i_num])
+                    Image_Name.append(sanpled_batch['positive_img'][i_num])
                     Image_Feature_ALL.append(positive_feature[i_num])
 
         print("Images:")
