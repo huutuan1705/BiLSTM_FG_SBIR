@@ -18,11 +18,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.sample_train_params = self.sample_embedding_network.parameters()
         self.optimizer = optim.Adam(self.sample_train_params, args.learning_rate)
         self.args = args
-    
-    def test_forward(self, batch):            #  this is being called only during evaluation
-        sketch_feature = self.sample_embedding_network(batch['sketch_imgs'].to(device))
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
-        return sketch_feature.cpu(), positive_feature.cpu()
+
     
     def train_model(self, batch):
         self.train()
@@ -66,7 +62,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer.step()
 
         return loss.item() 
-        
+    
+    def test_forward(self, batch):            #  this is being called only during evaluation
+        sketch_feature = self.sample_embedding_network(batch['sketch_imgs'].to(device))
+        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
+        return sketch_feature.cpu(), positive_feature.cpu()
+    
     def evaluate(self, dataloader_test):
         self.eval()
         
@@ -84,13 +85,15 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 if positive_name not in Image_Name:
                     Image_Name.append(sanpled_batch['positive_path'][i_num])
                     Image_Feature_ALL.append(positive_feature[i_num])
-
+        print(len(Image_Name))
+        print(Image_Name)
         rank = torch.zeros(len(Sketch_Name))
         Image_Feature_ALL = torch.stack(Image_Feature_ALL)
 
         for num, sketch_feature in enumerate(Sketch_Feature_ALL):
             s_name = Sketch_Name[num]
             sketch_query_name = '_'.join(s_name.split('/')[-1].split('_')[:-1])
+            
             if sketch_query_name not in Image_Name:
                 print(f"⚠️ Warning: {sketch_query_name} not found in Image_Name!")
                 continue
