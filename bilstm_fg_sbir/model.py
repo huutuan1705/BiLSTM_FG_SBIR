@@ -85,9 +85,15 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 if positive_name not in Image_Name:
                     Image_Name.append(sanpled_batch['positive_path'][i_num])
                     Image_Feature_ALL.append(positive_feature[i_num])
+
+        print("Images:")
         print(len(Image_Name))
         for i in range(10):
             print(Image_Name[i])
+        
+        print("Sketchs:")
+        for i in range(10):
+            print(Sketch_Name[i])
             
         rank = torch.zeros(len(Sketch_Name))
         Image_Feature_ALL = torch.stack(Image_Feature_ALL)
