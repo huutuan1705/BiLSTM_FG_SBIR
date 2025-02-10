@@ -91,7 +91,7 @@ class FGSBIR_Dataset(Dataset):
                 
             sample = {
                 'sketch_imgs': sketch_imgs, 'sketch_path': sketch_path,
-                'positive_img': positive_image, 'positive_path': positive_path,
+                'positive_img': positive_image, 'positive_path': positive_path, "positive_sample": positive_sample
             }
             
         return sample
