@@ -88,11 +88,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
 
         print("Images:")
         print(len(Image_Name))
-        for i in range(10):
+        for i in range(5):
             print(Image_Name[i])
         
         print("Sketchs:")
-        for i in range(10):
+        for i in range(5):
             print(Sketch_Name[i])
             
         rank = torch.zeros(len(Sketch_Name))
