@@ -31,6 +31,7 @@ if __name__ == "__main__":
     parsers.add_argument('--batch_size', type=int, default=16)
     parsers.add_argument('--threads', type=int, default=4)
     parsers.add_argument('--learning_rate', type=float, default=0.0001)
+    parsers.add_argument('--margin', type=float, default=0.3)
     parsers.add_argument('--epochs', type=int, default=200)
     
     args = parsers.parse_args()
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     model = BiLSTM_FGSBIR_Model(args=args)
     model.to(device)
     
-    step_count, top1, top5, top10 = -1, 0, 0, 0
+    step_count, top1, top5, top10, meanA, meanB = -1, 0, 0, 0, 0, 0
     
     for i_epoch in range(args.epochs):
         print(f"Epoch: {i_epoch+1} / {args.epochs}")
@@ -51,7 +52,7 @@ if __name__ == "__main__":
 
         with torch.no_grad():
             model.eval()
-            top1_eval, top5_eval, top10_eval = model.evaluate(dataloader_test)
+            top1_eval, top5_eval, top10_eval, meanA_eval, meanB_eval = model.evaluate(dataloader_test)
             
             if top1_eval > top1:
                 top1, top10 = top1_eval, top10_eval

@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
@@ -14,45 +15,30 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     def __init__(self, args):
         super(BiLSTM_FGSBIR_Model, self).__init__()
         self.sample_embedding_network = eval(args.backbone_name + "(args)")
-        self.loss = nn.TripletMarginLoss(margin=0.3)
+        self.loss = nn.TripletMarginLoss(margin=args.margin)
         self.sample_train_params = self.sample_embedding_network.parameters()
         self.optimizer = optim.Adam(self.sample_train_params, args.learning_rate)
         self.args = args
-
+        self.sketch_features = []
+        self.bilstm_network = BiLSTM(input_size=2048, num_layers=self.args.num_layers).to(device)
     
     def train_model(self, batch):
         self.train()
         self.optimizer.zero_grad()
         
-        # for param in self.sample_embedding_network.parameters():
-        #     param.requires_grad = False
-        
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
-        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
+        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device).fixed_param().eval())
+        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device).fixed_param().eval())
         
         sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # 48, 25 3, 299, 299
         
-        sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_features.append(sketch_feature)
+            self.sketch_features.append(sketch_feature)
             
-        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-
-        positive_linear = nn.Linear(positive_feature.shape[-1], self.args.output_size).to(device)
-        negative_linear = nn.Linear(negative_feature.shape[-1], self.args.output_size).to(device)
+        self.sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         
-        positive_feature = positive_linear(positive_feature).unsqueeze(1)
-        negative_feature = negative_linear(negative_feature).unsqueeze(1)
-        
-        bilstm = BiLSTM(input_size=sketch_features.shape[-1], num_layers=self.args.num_layers, 
-                        output_size=self.args.output_size).to(device)
-        sketch_features = bilstm(sketch_features)
-        
-        # 
-        attention_bilstm = AttentionSequence(input_size=sketch_features.shape[-1]).to(device)
-        sketch_features, _ = attention_bilstm(sketch_features)
-        
+        sketch_features = self.bilstm_network(sketch_features).train()
+      
         # print("Sketch feature shape: ", sketch_features.shape) # (48, 1, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (48, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (48, 1, 64)
@@ -71,54 +57,61 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     def evaluate(self, dataloader_test):
         self.eval()
         
-        Image_Feature_ALL = []
-        Image_Name = []
-        Sketch_Feature_ALL = []
-        Sketch_Name = []
+        sketch_array_tests = []
+        sketch_names = []
+        image_array_tests = []
+        image_names = []
         
-        for i_batch, sanpled_batch in enumerate(tqdm(dataloader_test)):
-            sketch_feature, positive_feature= self.test_forward(sanpled_batch)
-            Sketch_Feature_ALL.extend(sketch_feature)
-            Sketch_Name.extend(sanpled_batch['sketch_path'])
-
-            for i_num, positive_name in enumerate(sanpled_batch['positive_path']):
-                if positive_name not in Image_Name:
-                    Image_Name.append(sanpled_batch['positive_sample'][i_num])
-                    Image_Feature_ALL.append(positive_feature[i_num])
-
-        # print("Images:")
-        # print(len(Image_Name))
-        # for i in range(5):
-        #     print(Image_Name[i])
-        
-        # print("Sketchs:")
-        # for i in range(5):
-        #     print(Sketch_Name[i])
+        for idx, batch in enumerate(dataloader_test):
+            sketch_feature, positive_feature = self.test_forward(batch)
+            sketch_array_tests.append(sketch_feature)
+            sketch_names.append(batch['sketch_path'])
             
-        rank = torch.zeros(len(Sketch_Name))
-        Image_Feature_ALL = torch.stack(Image_Feature_ALL)
-
-        for num, sketch_feature in enumerate(Sketch_Feature_ALL):
-            s_name = Sketch_Name[num]
-            # print("s_name: ", s_name)
-            sketch_query_name = '_'.join(s_name.split('/')[-1].split('_')[:-1])
+            for i_num, positive_name in enumerate(batch['positive_path']): 
+                if positive_name not in image_names:
+                    image_names.append(batch['positive_path'][i_num])
+                    image_array_tests.append(positive_feature[i_num])
+                    
+        sketch_array_tests = torch.stack(sketch_array_tests)
+        image_array_tests = torch.stack(image_array_tests)
+        
+        sketch_steps = len(sketch_array_tests[0])
+        
+        avererage_area = []
+        avererage_area_percentile = []
+        
+        rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
+        rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
+        
+        for i_batch, sanpled_batch in enumerate(sketch_array_tests):
+            mean_rank = []
+            mean_rank_percentile = []
+            sketch_name = sketch_names[i_batch][0]
+            sketch_query_name = ''.join(sketch_name.split('/')[-1].split('')[:-1])
+            position_query = image_names.index(sketch_query_name)
             
-            if sketch_query_name not in Image_Name:
-                print(f"⚠️ Warning: {sketch_query_name} not found in Image_Name!")
-                continue
-            position_query = Image_Name.index(sketch_query_name)
-
-            distance = F.pairwise_distance(sketch_feature.unsqueeze(0), Image_Feature_ALL)
-            target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0),
-                                                  Image_Feature_ALL[position_query].unsqueeze(0))
-
-            rank[num] = distance.le(target_distance).sum()
-
-        top1 = rank.le(1).sum().numpy() / rank.shape[0]
-        top5 = rank.le(5).sum().numpy() / rank.shape[0]
-        top10 = rank.le(10).sum().numpy() / rank.shape[0]
-
-        # print('Time to EValuate:{}'.format(time.time() - start_time))
-        return top1, top5, top10
+            for i_sketch in range(sanpled_batch.shape[0]):
+                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
+                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
+                
+                rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
+                rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
+                
+                if rank_all[i_batch, i_sketch].item() == 0:
+                    mean_rank.append(1.)
+                else:
+                    mean_rank.append(1/rank_all[i_batch, i_sketch].item())
+                    mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
+            
+            avererage_area.append(np.sum(mean_rank)/len(mean_rank))
+            avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
         
+        top1_accuracy = rank_all[:, -1].le(1).sum().numpy() / rank_all.shape[0]
+        top5_accuracy = rank_all[:, -1].le(5).sum().numpy() / rank_all.shape[0]
+        top10_accuracy = rank_all[:, -1].le(10).sum().numpy() / rank_all.shape[0]
         
+        meanMB = np.mean(avererage_area)
+        meanMA = np.mean(avererage_area_percentile)
+        
+        return top1_accuracy, top5_accuracy, top10_accuracy, meanMB, meanMA
