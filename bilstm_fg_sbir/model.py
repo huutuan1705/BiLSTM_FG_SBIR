@@ -78,14 +78,19 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         sketch_steps = len(sketch_array_tests[0])
         
-        print("sketch_steps: ", sketch_steps)
+        for i in range(5):
+            print(sketch_array_tests[1])
+            
+        for i in range(5):
+            print(image_names[1])
+        # print("sketch_steps: ", sketch_steps)
         avererage_area = []
         avererage_area_percentile = []
         
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        print("rank_all_percentile shape: ", rank_all_percentile.shape)
+        # print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
