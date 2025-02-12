@@ -70,7 +70,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             for i_num, positive_name in enumerate(batch['positive_path']): 
                 if positive_name not in image_names:
-                    image_names.append(batch['positive_path'][i_num])
+                    image_names.append(batch['positive_sample'][i_num])
                     image_array_tests.append(positive_feature[i_num])
                     
         sketch_array_tests = torch.stack(sketch_array_tests)
@@ -78,11 +78,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         sketch_steps = len(sketch_array_tests[0])
         
-        for i in range(5):
-            print(sketch_names[i])
+        # for i in range(5):
+        #     print(sketch_names[i])
             
-        for i in range(5):
-            print(image_names[i])
+        # for i in range(5):
+        #     print(image_names[i])
         # print("sketch_steps: ", sketch_steps)
         avererage_area = []
         avererage_area_percentile = []
