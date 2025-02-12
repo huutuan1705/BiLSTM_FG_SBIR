@@ -28,9 +28,10 @@ if __name__ == "__main__":
     parsers.add_argument('--num_hidden_layers', type=int, default=512)
     parsers.add_argument('--bidirectional', type=bool, default=True)
     parsers.add_argument('--root_dir', type=str, default='./../')
-    parsers.add_argument('--batch_size', type=int, default=16)
+    parsers.add_argument('--pretrained_backbone', type=str, default='./../')
+    parsers.add_argument('--batch_size', type=int, default=48)
     parsers.add_argument('--threads', type=int, default=4)
-    parsers.add_argument('--learning_rate', type=float, default=0.0001)
+    parsers.add_argument('--learning_rate', type=float, default=0.001)
     parsers.add_argument('--margin', type=float, default=0.3)
     parsers.add_argument('--epochs', type=int, default=200)
     
@@ -39,6 +40,7 @@ if __name__ == "__main__":
     
     model = BiLSTM_FGSBIR_Model(args=args)
     model.to(device)
+    model.sample_embedding_network.load_state_dict(torch.load(args.pretrained_backbone))
     
     step_count, top1, top5, top10, meanA, meanB = -1, 0, 0, 0, 0, 0
     
@@ -61,5 +63,7 @@ if __name__ == "__main__":
         print('Top 1 accuracy:  {:.2f}'.format(top1_eval))
         print('Top 5 accuracy:  {:.2f}'.format(top5_eval))
         print('Top 10 accuracy: {:.2f}'.format(top10_eval))
+        print('Mean A:          {:.2f}'.format(meanA_eval))
+        print('Mean B:          {:.2f}'.format(meanB_eval))
         print('Loss:            {:.2f}'.format(loss))
         print("========================================")
