@@ -79,10 +79,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_steps = len(sketch_array_tests[0])
         
         for i in range(5):
-            print(sketch_array_tests[1])
+            print(sketch_names[i])
             
         for i in range(5):
-            print(image_names[1])
+            print(image_names[i])
         # print("sketch_steps: ", sketch_steps)
         avererage_area = []
         avererage_area_percentile = []
