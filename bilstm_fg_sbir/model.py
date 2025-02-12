@@ -95,7 +95,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             mean_rank = []
             mean_rank_percentile = []
             sketch_name = sketch_names[i_batch][0]
-            print(f'sketch_name: {sketch_name}')
+            # print(f'sketch_name: {sketch_name}')
             
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
