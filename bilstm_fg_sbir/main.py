@@ -5,6 +5,7 @@ import torch.utils.data as data
 from tqdm import tqdm
 from dataset import FGSBIR_Dataset
 from model import BiLSTM_FGSBIR_Model
+from torch.optim.lr_scheduler import StepLR
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -28,6 +29,8 @@ if __name__ == "__main__":
     parsers.add_argument('--num_hidden_layers', type=int, default=512)
     parsers.add_argument('--bidirectional', type=bool, default=True)
     parsers.add_argument('--root_dir', type=str, default='./../')
+    parsers.add_argument('--step_size', type=int, default=75)
+    parsers.add_argument('--gamma', type=float, default=0.5)
     parsers.add_argument('--pretrained_backbone', type=str, default='./../')
     parsers.add_argument('--batch_size', type=int, default=48)
     parsers.add_argument('--threads', type=int, default=4)
@@ -44,6 +47,7 @@ if __name__ == "__main__":
     
     step_count, top1, top5, top10, meanA, meanB = -1, 0, 0, 0, 0, 0
     
+    scheduler = StepLR(model.optimizer, step_size=args.step_size, gamma=args.gamma)
     for i_epoch in range(args.epochs):
         print(f"Epoch: {i_epoch+1} / {args.epochs}")
         loss = 0
@@ -51,7 +55,8 @@ if __name__ == "__main__":
             step_count = step_count + 1
             model.train()
             loss = model.train_model(batch=batch_data)
-
+        
+        scheduler.step()
         with torch.no_grad():
             model.eval()
             top1_eval, top5_eval, top10_eval, meanA_eval, meanB_eval = model.evaluate(dataloader_test)
