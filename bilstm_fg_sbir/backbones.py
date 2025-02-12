@@ -40,7 +40,7 @@ class VGG16(nn.Module):
     
 class InceptionV3(nn.Module):
     def __init__(self, args):
-        super(InceptionV3, self).__init__()
+        # super(InceptionV3, self).__init__()
         backbone = models.inception_v3(weights=Inception_V3_Weights.DEFAULT)
         # backbone = models.inception_v3()
 
@@ -107,7 +107,7 @@ class InceptionV3(nn.Module):
         output = self.pool_method(x).view(-1, 2048)
         return F.normalize(output)
     
-# dummy_input = torch.randn(48, 25, 3, 299, 299)
+# dummy_input = torch.randn(48, 3, 299, 299)
 # model = InceptionV3(None)
-# output = model(dummy_input)
-# print(output.shape) # [25, 2048]
+# output = model(dummy_input).unsqueeze(1)
+# print(output.shape) # [48, 1, 2048]
