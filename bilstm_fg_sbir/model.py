@@ -63,7 +63,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         image_array_tests = []
         image_names = []
         
-        for idx, batch in enumerate(dataloader_test):
+        for idx, batch in enumerate(tqdm(dataloader_test)):
             sketch_feature, positive_feature = self.test_forward(batch)
             sketch_array_tests.append(sketch_feature)
             sketch_names.append(batch['sketch_path'])
