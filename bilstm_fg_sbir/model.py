@@ -26,8 +26,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.train()
         self.optimizer.zero_grad()
         
-        self.sample_embedding_network.fixed_param()
-        self.sample_embedding_network.eval()
+        for param in self.sample_embedding_network.parameters():
+            param.requires_grad = False
         
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
