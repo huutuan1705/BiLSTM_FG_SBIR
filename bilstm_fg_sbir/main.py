@@ -13,7 +13,7 @@ def get_dataloader(args):
     dataloader_train = data.DataLoader(dataset_train, batch_size=args.batch_size, shuffle=True, num_workers=int(args.threads))
     
     dataset_test = FGSBIR_Dataset(args, mode='test')
-    dataloader_test = data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=int(args.threads))
+    dataloader_test = data.DataLoader(dataset_test, batch_size=args.batch_size, shuffle=False, num_workers=int(args.threads))
     
     return dataloader_train, dataloader_test
 
