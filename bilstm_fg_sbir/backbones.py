@@ -40,7 +40,7 @@ class VGG16(nn.Module):
     
 class InceptionV3(nn.Module):
     def __init__(self, args):
-        # super(InceptionV3, self).__init__()
+        super(InceptionV3, self).__init__()
         backbone = models.inception_v3(weights=Inception_V3_Weights.DEFAULT)
         # backbone = models.inception_v3()
 
