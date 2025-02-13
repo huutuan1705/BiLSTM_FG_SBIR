@@ -30,7 +30,7 @@ def draw_image_from_list(vector_image, stroke_idx, side=256):
     raster_image = scipy.ndimage.binary_dilation(raster_image)*255.0
     return Image.fromarray(raster_image).convert('RGB')
 
-def draw_image(vector_images, side=256, steps=25):
+def draw_image(vector_images, side=256, steps=26):
     for vector_image in vector_images:
         pixel_length = 0
         sample_freq = list(np.round(np.linspace(0,  len(vector_image), steps)[1:]))

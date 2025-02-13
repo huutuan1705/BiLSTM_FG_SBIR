@@ -102,10 +102,16 @@ class InceptionV3(nn.Module):
         # N x 2048 x 8 x 8
         x = self.Mixed_7c(x)
          
-        cbam = CBAM(gate_channels=x.shape[1]).to(device)
-        x = cbam(x)
-        output = self.pool_method(x).view(-1, 2048)
-        return F.normalize(output)
+        x = F.adaptive_max_pool2d(x, (1, 1))
+        x = x.view(x.size(0), -1) # (N, 2048)
+        return F.normalize(x)
+        
+        # output = self.pool_method(x).view(-1, 2048)
+        # return F.normalize(output)
+        
+    def fix_weights(self):
+        for x in self.parameters():
+            x.requires_grad = False
     
 # dummy_input = torch.randn(48, 3, 299, 299)
 # model = InceptionV3(None)

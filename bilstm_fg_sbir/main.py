@@ -31,7 +31,8 @@ if __name__ == "__main__":
     parsers.add_argument('--root_dir', type=str, default='./../')
     parsers.add_argument('--step_size', type=int, default=75)
     parsers.add_argument('--gamma', type=float, default=0.5)
-    parsers.add_argument('--pretrained_backbone', type=str, default='./../')
+    parsers.add_argument('--backbone_image_pretrained', type=str, default='./../')
+    parsers.add_argument('--backbone_sketch_pretrained', type=str, default='./../')
     parsers.add_argument('--batch_size', type=int, default=48)
     parsers.add_argument('--threads', type=int, default=4)
     parsers.add_argument('--learning_rate', type=float, default=0.001)
@@ -43,7 +44,8 @@ if __name__ == "__main__":
     
     model = BiLSTM_FGSBIR_Model(args=args)
     model.to(device)
-    model.sample_embedding_network.load_state_dict(torch.load(args.pretrained_backbone))
+    model.image_embedding_network.load_state_dict(torch.load(args.backbone_image_pretrained))
+    model.sketch_embedding_network.load_state_dict(torch.load(args.backbone_sketch_pretrained))
     
     step_count, top1, top5, top10, meanA, meanB = -1, 0, 0, 0, 0, 0
     

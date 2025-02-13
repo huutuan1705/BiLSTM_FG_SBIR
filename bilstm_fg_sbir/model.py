@@ -14,36 +14,45 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class BiLSTM_FGSBIR_Model(nn.Module):
     def __init__(self, args):
         super(BiLSTM_FGSBIR_Model, self).__init__()
-        self.sample_embedding_network = eval(args.backbone_name + "(args)")
+        self.sketch_embedding_network = eval(args.backbone_name + "(args)")
+        self.image_embedding_network = eval(args.backbone_name + "(args)")
         self.loss = nn.TripletMarginLoss(margin=args.margin)
-        self.sample_train_params = self.sample_embedding_network.parameters()
-        self.optimizer = optim.Adam(self.sample_train_params, args.learning_rate)
+        self.optimizer = optim.Adam([
+            {'params': self.sketch_embedding_network.parameters(), 'lr': args.learning_rate},
+            {'params': self.image_embedding_network.parameters(), 'lr': args.learning_rate},
+        ])
+        
         self.args = args
-        self.bilstm_network = BiLSTM(input_size=2048, num_layers=self.args.num_layers).to(device)
+        if args.backbone_name == "VGG16":
+            self.input_size=512
+        else:
+            self.input_size=2048
+            
+        self.bilstm_network = BiLSTM(input_size=self.input_size, num_layers=self.args.num_layers).to(device)
     
     def train_model(self, batch):
         self.train()
         self.optimizer.zero_grad()
         
-        for param in self.sample_embedding_network.parameters():
-            param.requires_grad = False
+        self.sketch_embedding_network.fix_weights()
+        self.image_embedding_network.fix_weights()
         
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device)).unsqueeze(1)
-        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device)).unsqueeze(1)
+        positive_feature = self.image_embedding_network(batch['positive_img'].to(device)).unsqueeze(1)
+        negative_feature = self.image_embedding_network(batch['negative_img'].to(device)).unsqueeze(1)
         
         sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # 48, 25 3, 299, 299
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
+            sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         
         sketch_features = self.bilstm_network(sketch_features)
       
-        # print("Sketch feature shape: ", sketch_features.shape) # (48, 1, 64)
-        # print("Positive feature shape: ", positive_feature.shape) # (48, 1, 64)
-        # print("Negative feature shape: ", negative_feature.shape) # (48, 1, 64)
+        # print("Sketch feature shape: ", sketch_features.shape) # (N, 25, 2048)
+        # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 2048)
+        # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 2048)
         
         loss = self.loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
@@ -52,8 +61,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         return loss.item() 
     
     def test_forward(self, batch):            #  this is being called only during evaluation
-        sketch_feature = self.sample_embedding_network(batch['sketch_imgs'].to(device))
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
+        sketch_feature = self.sketch_embedding_network(batch['sketch_imgs'].to(device))
+        positive_feature = self.image_embedding_network(batch['positive_img'].to(device))
         return sketch_feature.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
