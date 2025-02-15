@@ -74,15 +74,14 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         for idx, batch in enumerate(tqdm(dataloader_test)):
             sketch_feature, positive_feature = self.test_forward(batch)
-            sketch_array_tests.append(sketch_feature)
-            sketch_names.append(batch['sketch_path'])
+            sketch_array_tests.extend(sketch_feature)
+            sketch_names.extend(batch['sketch_path'])
             
             for i_num, positive_name in enumerate(batch['positive_path']): 
                 if positive_name not in image_names:
                     image_names.append(batch['positive_sample'][i_num])
                     image_array_tests.append(positive_feature[i_num])
                     
-        sketch_array_tests = torch.stack(sketch_array_tests)
         image_array_tests = torch.stack(image_array_tests)
         
         sketch_steps = len(sketch_array_tests[0])
@@ -96,8 +95,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         avererage_area = []
         avererage_area_percentile = []
         
-        rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
-        rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
+        rank_all = torch.zeros(len(sketch_array_tests))
+        rank_all_percentile = torch.zeros(len(sketch_array_tests))
         
         # print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):
