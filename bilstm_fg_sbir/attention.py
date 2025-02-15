@@ -4,63 +4,40 @@ import torch.nn.functional as F
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class AttentionImage(nn.Module):
-    def __init__(self, input_size, hidden_layer=2048):
-        super(AttentionImage, self).__init__()  
-        self.input_size = input_size      
-        self.attn_hidden_layer = hidden_layer
-
-        self.net = nn.Sequential(
-            nn.Conv2d(self.input_size, self.attn_hidden_layer, kernel_size=1), 
-            nn.BatchNorm2d(self.attn_hidden_layer), 
-            nn.ReLU(),
-            nn.Conv2d(self.attn_hidden_layer, 1, kernel_size=1)
-        )
-
-        self.softmax = nn.Softmax(dim=1) 
-
-    def forward(self, x):
-        attn_mask = self.net(x).to(device)  # (batch_size, 1, H, W)
-        attn_mask = attn_mask.view(attn_mask.size(0), -1)  # reshape (batch_size, H*W)
-        attn_mask = self.softmax(attn_mask)  # Softmax
-        attn_mask = attn_mask.view(x.size(0), 1, x.size(2), x.size(3))  # reshape (batch_size, 1, H, W)
-
-        x_attn = x * attn_mask  # attention
-        x = x + x_attn  # Residual connection
-
-        x = F.adaptive_avg_pool2d(x, (1, 1))
-        x = x.view(x.size(0), -1)
-        
-        return x, attn_mask
+class Attention_global(nn.Module):
+    def __init__(self):
+        super(Attention_global, self).__init__()
+        self.pool_method =  nn.AdaptiveMaxPool2d(1) # as default
+        self.net = nn.Sequential(nn.Conv2d(2048, 512, kernel_size=1),
+                                 nn.BatchNorm2d(512),
+                                 nn.ReLU(),
+                                 nn.Conv2d(512, 1, kernel_size=1))
     
-class AttentionSequence(nn.Module):
-    def __init__(self, input_size, hidden_layer=128):
-        super(AttentionSequence, self).__init__()
-        self.input_size = input_size
-        self.hidden_layer = hidden_layer
+    def fix_weights(self):
+        for x in self.parameters():
+            x.requires_grad = False
+              
+    def forward(self, backbone_tensor):
+        backbone_tensor_1 = self.net(backbone_tensor)
+        backbone_tensor_1 = backbone_tensor_1.view(backbone_tensor_1.size(0), -1)
+        backbone_tensor_1 = nn.Softmax(dim=1)(backbone_tensor_1)
+        backbone_tensor_1 = backbone_tensor_1.view(backbone_tensor_1.size(0), 1, backbone_tensor.size(2), backbone_tensor.size(3))
+        fatt = backbone_tensor*backbone_tensor_1
+        fatt1 = backbone_tensor +fatt
+        fatt1 = self.pool_method(fatt1).view(-1, 2048)
+        return  F.normalize(fatt1)
 
-        self.net = nn.Sequential(
-            nn.Conv1d(in_channels=self.input_size, out_channels=self.hidden_layer, kernel_size=1),  
-            nn.BatchNorm1d(self.hidden_layer),
-            nn.ReLU(),
-            nn.Conv1d(in_channels=self.hidden_layer, out_channels=1, kernel_size=1)  
-        )
-        self.softmax = nn.Softmax(dim=2)  # Softmax for N dims (sequence_length)
-
+class Linear_global(nn.Module):
+    def __init__(self, feature_num):
+        super(Linear_global, self).__init__()
+        self.head_layer = nn.Linear(2048, feature_num)
+    
+    def fix_weights(self):
+        for x in self.parameters():
+            x.requires_grad = False
+            
     def forward(self, x):
-        if x.dim() == 2:  # If input don't have batch dimension
-            x = x.unsqueeze(0)  # add batch dimension => (1, N, d)
-
-        x = x.permute(0, 2, 1)  # reshape (batch_size, d, N)
-
-        attn_mask = self.net(x)  # (batch_size, 1, N)
-        attn_mask = self.softmax(attn_mask)  # Softmax normalize attention weights
-
-        x_weighted = torch.bmm(attn_mask, x.permute(0, 2, 1))  # (batch_size, 1, N) @ (batch_size, N, d) => (batch_size, 1, d)
-        # x_weighted = x_weighted.squeeze(1)  # (batch_size, d)
-
-        # return (batch_size, d) and attention weights (batch_size, 1, N)
-        return x_weighted, attn_mask  
+        return F.normalize(self.head_layer(x))
 
 # input_tensor = torch.randn(68, 25, 64)
 # model = AttentionSequence(input_size=64)

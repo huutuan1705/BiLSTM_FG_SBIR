@@ -102,12 +102,12 @@ class InceptionV3(nn.Module):
         # N x 2048 x 8 x 8
         x = self.Mixed_7c(x)
          
-        x = F.adaptive_max_pool2d(x, (1, 1))
-        x = x.view(x.size(0), -1) # (N, 2048)
-        return F.normalize(x)
-        
-        # output = self.pool_method(x).view(-1, 2048)
-        # return F.normalize(output)
+        if self.args.use_attention == False:
+            x = F.adaptive_max_pool2d(x, (1, 1))
+            x = x.view(x.size(0), -1) # (N, 2048)
+            return F.normalize(x)
+
+        return x
         
     def fix_weights(self):
         for x in self.parameters():
