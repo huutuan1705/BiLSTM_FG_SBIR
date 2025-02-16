@@ -87,8 +87,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_feature = self.sketch_attention(sketch_feature)
             sketch_features.append(sketch_feature)
             
-        sketch_features = torch.stack(sketch_features, dim=0)
-        # print("sketch_feature shape: ", sketch_feature.shape)
+        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         
         return sketch_features.cpu(), positive_feature.cpu()
     
@@ -101,13 +100,19 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         for idx, batch in enumerate(tqdm(dataloader_test)):
             sketch_feature, positive_feature = self.test_forward(batch)
-            sketch_array_tests.extend(sketch_feature)
+            sketch_array_tests.append(sketch_feature)
             sketch_names.append(batch['sketch_path'])
             
             for i_num, positive_name in enumerate(batch['positive_path']): 
                 if positive_name not in image_names:
                     image_names.append(batch['positive_sample'][i_num])
-                    image_array_tests.extend(positive_feature[i_num])
+                    image_array_tests.append(positive_feature[i_num])
+        
+        sketch_array_tests = torch.stack(sketch_array_tests)
+        image_array_tests = torch.stack(image_array_tests)
+        
+        print("sketch_array_tests shape: ", sketch_array_tests.shape)
+        print("image_array_tests shape: ", image_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0])
 
