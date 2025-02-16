@@ -77,13 +77,18 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     
     def test_forward(self, batch):            #  this is being called only during evaluation
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
+        positive_feature = self.linear(self.attention(positive_feature))
+        
         # print("positive_feature shape: ", positive_feature.shape)
-        sketch_feature = self.sketch_embedding_network(batch['sketch_imgs'].squeeze(0).to(device))
+        sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # (N, 25 3, 299, 299)
+        sketch_features = []
+        for i in range(sketch_imgs_tensor.shape[0]):
+            sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
+            sketch_feature = self.sketch_attention(sketch_feature)
+            sketch_features.append(sketch_feature)
         # print("sketch_feature shape: ", sketch_feature.shape)
         
-        positive_feature = self.linear(self.attention(positive_feature))
-        sketch_feature = self.sketch_attention(sketch_feature)
-        return sketch_feature.cpu(), positive_feature.cpu()
+        return sketch_features.squeeze(0).cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
         self.eval()
