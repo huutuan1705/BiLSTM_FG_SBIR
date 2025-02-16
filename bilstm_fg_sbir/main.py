@@ -68,6 +68,7 @@ if __name__ == "__main__":
     model.attention.load_state_dict(attention_state['attention'])
     model.sketch_attention.load_state_dict(attention_state['sketch_attention'])
     model.linear.load_state_dict(linear_state['linear'])
+    model.sketch_linear.load_state_dict(linear_state['sketch_linear'])
     
     step_count, top1, top5, top10, meanA, meanB = -1, 0, 0, 0, 0, 0
     

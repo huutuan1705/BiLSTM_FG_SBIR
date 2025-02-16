@@ -38,6 +38,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.linear = Linear_global(feature_num=self.args.output_size)
         self.linear.fix_weights()
         
+        self.sketch_linear = Linear_global(feature_num=self.args.output_size)
+        self.sketch_linear.fix_weights()
+        
         self.optimizer = optim.Adam([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
         ])
@@ -60,8 +63,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features).unsqueeze(1) # (N, 2048)
-      
+        sketch_features = self.bilstm_network(sketch_features)# (N, 2048)
+        
+        sketch_features = self.sketch_linear(sketch_features)
         # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
@@ -98,13 +102,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     image_array_tests.extend(positive_feature[i_num])
         
         sketch_steps = len(sketch_array_tests[0])
-        
-        # for i in range(5):
-        #     print(sketch_names[i])
-            
-        # for i in range(5):
-        #     print(image_names[i])
-        # print("sketch_steps: ", sketch_steps)
+
         avererage_area = []
         avererage_area_percentile = []
         
@@ -122,7 +120,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             position_query = image_names.index(sketch_query_name)
             
             for i_sketch in range(sanpled_batch.shape[0]):
-                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
+                sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)))
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 
