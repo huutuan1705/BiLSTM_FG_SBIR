@@ -25,7 +25,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             if type(m) == nn.Linear or type(m) == nn.Conv2d:
                 nn.init.kaiming_normal_(m.weight)
             
-        self.bilstm_network = BiLSTM(input_size=2048).to(device)
+        self.bilstm_network = BiLSTM(args=args, input_size=2048).to(device)
         # self.bilstm_network.apply(init_weights)
         self.bilstm_params = self.bilstm_network.parameters()
         
