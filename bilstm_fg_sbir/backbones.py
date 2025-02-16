@@ -113,5 +113,5 @@ class InceptionV3(nn.Module):
     
 # dummy_input = torch.randn(48, 3, 299, 299)
 # model = InceptionV3(None)
-# output = model(dummy_input).unsqueeze(1)
+# output = model(dummy_input)
 # print(output.shape) # [48, 1, 2048]

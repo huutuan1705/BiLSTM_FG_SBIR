@@ -39,9 +39,8 @@ class Linear_global(nn.Module):
     def forward(self, x):
         return F.normalize(self.head_layer(x))
 
-# input_tensor = torch.randn(68, 25, 64)
-# model = AttentionSequence(input_size=64)
-# output, attn_mask = model(input_tensor)
+# input_tensor = torch.randn(48, 2048, 8, 8)
+# model = Attention_global()
+# output = model(input_tensor)
 
-# print("Output shape:", output.shape)  # (48, 1, 64)
-# print("Attention mask shape:", attn_mask.shape)  # (48, 1, 25)
+# print("Output shape:", output.shape)  # (48, 2048)

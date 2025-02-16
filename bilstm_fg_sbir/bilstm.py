@@ -14,12 +14,12 @@ class BiLSTM(nn.Module):
                             batch_first=True, bidirectional=bidirectional)
     def forward(self, x):
         for _ in range(self.num_bilstm_blocks):
-            x = self.bilstm(x)
+            x, _ = self.bilstm(x)
             
         x = x[:, -1, :]       
         return x
 
 # x = torch.randn(48, 25, 2048)
-# model = BiLSTM(input_size=2048, hidden_size1=1024, num_layers=2, bidirectional=True)
+# model = BiLSTM(None, input_size=2048)
 # x = model(x)
 # print(x.shape)
