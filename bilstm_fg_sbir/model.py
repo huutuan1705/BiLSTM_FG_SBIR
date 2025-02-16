@@ -21,9 +21,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.sketch_train_params = self.sketch_embedding_network.parameters()
         self.args = args
         
-        def init_weights(m):
-            if type(m) == nn.Linear or type(m) == nn.Conv2d:
-                nn.init.kaiming_normal_(m.weight)
+        self.sample_embedding_network.fix_weights()
+        self.sketch_embedding_network.fix_weights()
             
         self.bilstm_network = BiLSTM(args=args, input_size=2048).to(device)
         # self.bilstm_network.apply(init_weights)
