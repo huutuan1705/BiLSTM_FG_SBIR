@@ -92,10 +92,10 @@ if __name__ == "__main__":
             
             torch.save(model.state_dict(), args.dataset_name + '_last.pth')
                 
-        print('Top 1 accuracy:  {:.2f}'.format(top1_eval))
-        print('Top 5 accuracy:  {:.2f}'.format(top5_eval))
-        print('Top 10 accuracy: {:.2f}'.format(top10_eval))
-        print('Mean A:          {:.2f}'.format(meanA_eval))
-        print('Mean B:          {:.2f}'.format(meanB_eval))
-        print('Loss:            {:.2f}'.format(loss))
+        print('Top 1 accuracy:  {:.4f}'.format(top1_eval))
+        print('Top 5 accuracy:  {:.4f}'.format(top5_eval))
+        print('Top 10 accuracy: {:.4f}'.format(top10_eval))
+        print('Mean A:          {:.4f}'.format(meanA_eval))
+        print('Mean B:          {:.4f}'.format(meanB_eval))
+        print('Loss:            {:.4f}'.format(loss))
         print("========================================")
