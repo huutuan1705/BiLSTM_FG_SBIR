@@ -7,7 +7,7 @@ class BiLSTM(nn.Module):
         super(BiLSTM, self).__init__()
         self.args = args
         self.input_size = input_size
-        self.hidden_size1 = args.hidden_size
+        self.hidden_size = args.hidden_size
         self.num_layers = args.num_layers
         self.num_bilstm_blocks = args.num_bilstm_blocks
         self.bilstm = nn.LSTM(input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
