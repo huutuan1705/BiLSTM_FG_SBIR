@@ -32,11 +32,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.attention = Attention_global()
         self.attention.fix_weights()
         
+        self.sketch_attention = Attention_global()
+        self.sketch_attention.fix_weights()
+        
         self.linear = Linear_global(feature_num=self.args.output_size)
         self.linear.fix_weights()
-        
-        self.sketch_linear = Linear_global(feature_num=self.args.output_size)
-        self.sketch_linear.fix_weights()
         
         self.optimizer = optim.Adam([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
@@ -56,12 +56,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
+            sketch_feature = self.sketch_attention(sketch_feature)
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         sketch_features = self.bilstm_network(sketch_features) # (N, 2048)
-        
-        sketch_features = self.sketch_linear(sketch_features)
       
         # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
@@ -78,7 +77,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         
         positive_feature = self.linear(self.attention(positive_feature))
-        sketch_feature = self.linear(self.attention(sketch_feature))
+        sketch_feature = self.sketch_attention(sketch_feature)
         return sketch_feature.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
