@@ -35,11 +35,9 @@ if __name__ == "__main__":
     parsers.add_argument('--num_bilstm_blocks', type=int, default=2)
     parsers.add_argument('--root_dir', type=str, default='./../')
     
-    parsers.add_argument('--backbone_pretrained', type=str, default='./../')
-    parsers.add_argument('--attention_pretrained', type=str, default='./../')
-    parsers.add_argument('--linear_pretrained', type=str, default='./../')
-    parsers.add_argument('--load_pretrained', type=bool, default=False)
-    parsers.add_argument('--pretrained', type=str, default='./../')
+    parsers.add_argument('--pretrained_dir', type=str, default='./../')
+    parsers.add_argument('--load_pretrained_best', type=bool, default=False)
+    parsers.add_argument('--load_pretrained_last', type=bool, default=False)
     
     parsers.add_argument('--batch_size', type=int, default=16)
     parsers.add_argument('--test_batch_size', type=int, default=37)
@@ -58,12 +56,12 @@ if __name__ == "__main__":
     model = BiLSTM_FGSBIR_Model(args=args)
     model.to(device)
     
-    if args.load_pretrained:
-        model.load_state_dict(torch.load(args.pretrained))
+    if args.load_pretrained_best:
+        model.load_state_dict(torch.load(args.pretrained_dir + "/" + args.dataset_name + '_best.pth'))
     
-    backbones_state = torch.load(args.backbone_pretrained)
-    attention_state = torch.load(args.attention_pretrained)
-    linear_state = torch.load(args.linear_pretrained)
+    backbones_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_backbone.pth")
+    attention_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_attention.pth")
+    linear_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_linear.pth")
     
     model.sample_embedding_network.load_state_dict(backbones_state['sample_embedding_network'])
     model.sketch_embedding_network.load_state_dict(backbones_state['sketch_embedding_network'])
