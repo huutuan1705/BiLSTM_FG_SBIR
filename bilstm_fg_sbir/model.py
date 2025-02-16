@@ -78,7 +78,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     def test_forward(self, batch):            #  this is being called only during evaluation
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         # print("positive_feature shape: ", positive_feature.shape)
-        sketch_feature = self.sketch_embedding_network(batch['sketch_imgs'].unsqueeze(0).to(device))
+        sketch_feature = self.sketch_embedding_network(batch['sketch_imgs'].squeeze(0).to(device))
         # print("sketch_feature shape: ", sketch_feature.shape)
         
         positive_feature = self.linear(self.attention(positive_feature))
