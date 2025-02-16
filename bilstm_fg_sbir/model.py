@@ -90,7 +90,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_features = torch.stack(sketch_features, dim=0)
         # print("sketch_feature shape: ", sketch_feature.shape)
         
-        return sketch_features.squeeze(0).cpu(), positive_feature.cpu()
+        return sketch_features.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
         self.eval()
@@ -127,6 +127,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
+            print("sanpled_batch shape: ", sanpled_batch.shape)
             for i_sketch in range(sanpled_batch.shape[0]):
                 sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)))
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
