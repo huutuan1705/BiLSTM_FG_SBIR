@@ -108,11 +108,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     image_names.append(batch['positive_sample'][i_num])
                     image_array_tests.append(positive_feature[i_num])
         
+        print("sketch_array_tests shape 1: ", sketch_array_tests.shape)
+        
         sketch_array_tests = torch.stack(sketch_array_tests)
         image_array_tests = torch.stack(image_array_tests)
         
-        print("sketch_array_tests shape: ", sketch_array_tests.shape)
-        print("image_array_tests shape: ", image_array_tests.shape)
+        print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0])
 
@@ -132,7 +133,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            print("sanpled_batch shape: ", sanpled_batch.shape)
+            # print("sanpled_batch shape: ", sanpled_batch.shape)
             for i_sketch in range(sanpled_batch.shape[0]):
                 sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)))
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
