@@ -7,52 +7,65 @@ from tqdm import tqdm
 
 from backbones import VGG16, ResNet50, InceptionV3
 from bilstm import BiLSTM
-from attention import AttentionSequence
+from attention import Attention_global, Linear_global
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class BiLSTM_FGSBIR_Model(nn.Module):
     def __init__(self, args):
         super(BiLSTM_FGSBIR_Model, self).__init__()
+        self.sample_embedding_network = eval(args.backbone_name + "(args)")
         self.sketch_embedding_network = eval(args.backbone_name + "(args)")
-        self.image_embedding_network = eval(args.backbone_name + "(args)")
-        self.loss = nn.TripletMarginLoss(margin=args.margin)
+        self.loss = nn.TripletMarginLoss(margin=args.margin)        
+        self.sample_train_params = self.sample_embedding_network.parameters()
+        self.sketch_train_params = self.sketch_embedding_network.parameters()
+        self.args = args
+        
+        def init_weights(m):
+            if type(m) == nn.Linear or type(m) == nn.Conv2d:
+                nn.init.kaiming_normal_(m.weight)
+            
+        self.bilstm_network = BiLSTM(input_size=2048, num_layers=self.args.num_layers).to(device)
+        # self.bilstm_network.apply(init_weights)
+        self.bilstm_params = self.bilstm_network.parameters()
+        
+        self.attention = Attention_global()
+        self.attention.fix_weights()
+        
+        self.linear = Linear_global(feature_num=self.args.output_size)
+        self.linear.fix_weights()
+        
+        self.sketch_linear = Linear_global(feature_num=self.args.output_size)
+        self.sketch_linear.fix_weights()
+        
         self.optimizer = optim.Adam([
-            {'params': self.sketch_embedding_network.parameters(), 'lr': args.learning_rate},
-            {'params': self.image_embedding_network.parameters(), 'lr': args.learning_rate},
+            {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
         ])
         
-        self.args = args
-        if args.backbone_name == "VGG16":
-            self.input_size=512
-        else:
-            self.input_size=2048
-            
-        self.bilstm_network = BiLSTM(input_size=self.input_size, num_layers=self.args.num_layers).to(device)
-    
     def train_model(self, batch):
         self.train()
         self.optimizer.zero_grad()
         
-        self.sketch_embedding_network.fix_weights()
-        self.image_embedding_network.fix_weights()
+        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
+        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
         
-        positive_feature = self.image_embedding_network(batch['positive_img'].to(device)).unsqueeze(1)
-        negative_feature = self.image_embedding_network(batch['negative_img'].to(device)).unsqueeze(1)
+        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1)
+        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1)
         
-        sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # 48, 25 3, 299, 299
+        sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # (N, 25 3, 299, 299)
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
+        sketch_features = self.bilstm_network(sketch_features) # (N, 2048)
         
-        sketch_features = self.bilstm_network(sketch_features)
+        sketch_features = self.sketch_linear(sketch_features)
       
-        # print("Sketch feature shape: ", sketch_features.shape) # (N, 25, 2048)
-        # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 2048)
-        # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 2048)
+        # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
+        # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
+        # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
         
         loss = self.loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
@@ -61,8 +74,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         return loss.item() 
     
     def test_forward(self, batch):            #  this is being called only during evaluation
-        sketch_feature = self.sketch_embedding_network(batch['sketch_imgs'].to(device))
-        positive_feature = self.image_embedding_network(batch['positive_img'].to(device))
+        sketch_feature = self.sketch_embedding_network(batch['sketch_imgs'].squeeze(0).to(device))
+        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
+        
+        positive_feature = self.linear(self.attention(positive_feature))
+        sketch_feature = self.linear(self.attention(sketch_feature))
         return sketch_feature.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
@@ -75,14 +91,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for idx, batch in enumerate(tqdm(dataloader_test)):
             sketch_feature, positive_feature = self.test_forward(batch)
             sketch_array_tests.extend(sketch_feature)
-            sketch_names.extend(batch['sketch_path'])
+            sketch_names.append(batch['sketch_path'])
             
             for i_num, positive_name in enumerate(batch['positive_path']): 
                 if positive_name not in image_names:
                     image_names.append(batch['positive_sample'][i_num])
-                    image_array_tests.append(positive_feature[i_num])
-                    
-        image_array_tests = torch.stack(image_array_tests)
+                    image_array_tests.extend(positive_feature[i_num])
         
         sketch_steps = len(sketch_array_tests[0])
         
@@ -95,8 +109,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         avererage_area = []
         avererage_area_percentile = []
         
-        rank_all = torch.zeros(len(sketch_array_tests))
-        rank_all_percentile = torch.zeros(len(sketch_array_tests))
+        rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
+        rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
         # print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):

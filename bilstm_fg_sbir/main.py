@@ -18,6 +18,11 @@ def get_dataloader(args):
     
     return dataloader_train, dataloader_test
 
+def load_pretrained(model, args):
+    if args.load_pretrained:
+        model.load_state_dict(torch.load(args.pretrained))
+    
+    return model
 if __name__ == "__main__":
     parsers = argparse.ArgumentParser(description='Base Fine-Grained SBIR model')
     parsers.add_argument('--dataset_name', type=str, default='ShoeV2')
@@ -29,13 +34,13 @@ if __name__ == "__main__":
     parsers.add_argument('--hidden_size', type=int, default=1024)
     parsers.add_argument('--num_bilstm_blocks', type=int, default=2)
     parsers.add_argument('--root_dir', type=str, default='./../')
+    
     parsers.add_argument('--backbone_pretrained', type=str, default='./../')
-    parsers.add_argument('--load_backbone_pretrained', type=bool, default=False)
-    parsers.add_argument('--pretrained', type=str, default='./../')
+    parsers.add_argument('--attention_pretrained', type=str, default='./../')
+    parsers.add_argument('--linear_pretrained', type=str, default='./../')
     parsers.add_argument('--load_pretrained', type=bool, default=False)
-    parsers.add_argument('--train_backbone', type=bool, default=True)
-    parsers.add_argument('--use_attention', type=bool, default=False)
-    parsers.add_argument('--use_linear', type=bool, default=False)
+    parsers.add_argument('--pretrained', type=str, default='./../')
+    
     parsers.add_argument('--batch_size', type=int, default=16)
     parsers.add_argument('--test_batch_size', type=int, default=37)
     parsers.add_argument('--step_size', type=int, default=100)
@@ -53,9 +58,18 @@ if __name__ == "__main__":
     model = BiLSTM_FGSBIR_Model(args=args)
     model.to(device)
     
-    backbone_states = torch.load(args.backbone_pretrained)
-    model.image_embedding_network.load_state_dict(backbone_states["image_backbones"])
-    model.sketch_embedding_network.load_state_dict(backbone_states["sketch_backbones"])
+    if args.load_pretrained:
+        model.load_state_dict(torch.load(args.pretrained))
+    
+    backbones_state = torch.load(args.backbone_pretrained)
+    attention_state = torch.load(args.attention_pretrained)
+    linear_state = torch.load(args.linear_pretrained)
+    
+    model.sample_embedding_network.load_state_dict(backbones_state['sample_embedding_network'])
+    model.sketch_embedding_network.load_state_dict(backbones_state['sketch_embedding_network'])
+    model.attention.load_state_dict(attention_state['attention'])
+    model.linear.load_state_dict(linear_state['linear'])
+    model.sketch_linear.load_state_dict(linear_state['sketch_linear'])
     
     step_count, top1, top5, top10, meanA, meanB = -1, 0, 0, 0, 0, 0
     
@@ -73,9 +87,11 @@ if __name__ == "__main__":
             model.eval()
             top1_eval, top5_eval, top10_eval, meanA_eval, meanB_eval = model.evaluate(dataloader_test)
             
-            if top1_eval > top1:
+            if top10_eval > top10:
                 top1, top10 = top1_eval, top10_eval
-                torch.save(model.state_dict(), args.backbone_name + '_' + args.dataset_name + '_best.pth')
+                torch.save(model.state_dict(), args.dataset_name + '_best.pth')
+            
+            torch.save(model.state_dict(), args.dataset_name + '_last.pth')
                 
         print('Top 1 accuracy:  {:.2f}'.format(top1_eval))
         print('Top 5 accuracy:  {:.2f}'.format(top5_eval))
