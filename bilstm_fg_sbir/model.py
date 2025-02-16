@@ -86,6 +86,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_feature = self.sketch_attention(sketch_feature)
             sketch_features.append(sketch_feature)
+            
+        sketch_features = torch.stack(sketch_features, dim=0)
         # print("sketch_feature shape: ", sketch_feature.shape)
         
         return sketch_features.squeeze(0).cpu(), positive_feature.cpu()
