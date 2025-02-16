@@ -3,8 +3,6 @@ import torch.nn as nn
 import torchvision.models as models
 import torch.nn.functional as F
 
-from attention import AttentionImage
-from cbam import CBAM
 from torchvision.models import Inception_V3_Weights, ResNet50_Weights, VGG16_Weights
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -102,10 +100,10 @@ class InceptionV3(nn.Module):
         # N x 2048 x 8 x 8
         x = self.Mixed_7c(x)
          
-        if self.args.use_attention == False:
-            x = F.adaptive_max_pool2d(x, (1, 1))
-            x = x.view(x.size(0), -1) # (N, 2048)
-            return F.normalize(x)
+        # if self.args.use_attention == False:
+        #     x = F.adaptive_max_pool2d(x, (1, 1))
+        #     x = x.view(x.size(0), -1) # (N, 2048)
+        #     return F.normalize(x)
 
         return x
         
