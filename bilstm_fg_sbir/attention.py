@@ -27,6 +27,33 @@ class Attention_global(nn.Module):
         fatt1 = self.pool_method(fatt1).view(-1, 2048)
         return  F.normalize(fatt1)
 
+class Attention_sequence(nn.Module):
+    def __init__(self):
+        super(Attention_sequence, self).__init__()
+        self.net = nn.Sequential(
+            nn.Conv1d(2048, 512, kernel_size=1),  
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+            nn.Conv1d(512, 1, kernel_size=1)
+        )
+
+    def fix_weights(self):
+        for param in self.parameters():
+            param.requires_grad = False
+
+    def forward(self, x):
+        x = x.transpose(1, 2)  # transpose (N, 2048, 25)
+        
+        # get attention weights
+        attn_weights = self.net(x)  # (N, 1, 25)
+        attn_weights = attn_weights.squeeze(1)  # (N, 25)
+        attn_weights = F.softmax(attn_weights, dim=1).unsqueeze(1)  # (N, 1, 25)
+        # print(attn_weights)
+        fatt = x * attn_weights  # (N, 2048, 25)
+        fatt1 = x + fatt
+        fatt1 = F.normalize(fatt1, dim=1)
+        return fatt1.transpose(1, 2) 
+    
 class Linear_global(nn.Module):
     def __init__(self, feature_num):
         super(Linear_global, self).__init__()
@@ -43,4 +70,9 @@ class Linear_global(nn.Module):
 # model = Attention_global()
 # output = model(input_tensor)
 
-# print("Output shape:", output.shape)  # (48, 2048)
+# N, D = 4, 2048  # Batch size 4, Feature size 2048
+# x = torch.randn(48, 25, 2048)  
+# model = Attention_sequence()
+# output = model(x)
+
+# print(output.shape)
