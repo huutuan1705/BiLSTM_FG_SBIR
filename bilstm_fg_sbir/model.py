@@ -102,7 +102,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        print("sketch_features shape: ", sketch_features.shape)
+        
         return sketch_features.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
@@ -146,11 +146,13 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             print("sanpled_batch shape: ", sanpled_batch.shape)
             for i_sketch in range(sanpled_batch.shape[0]):
                 print("shape sanpled_batch[:i_sketch+1]: ", sanpled_batch[:i_sketch+1].shape) #[1, 25, 2048]
-                print("shape sketch_feature[-1].unsqueeze(0): ", sketch_feature[-1].unsqueeze(0).shape) #[1, 25, 2048]
                 print("shape image_array_tests: ", image_array_tests.shape) #[323, 64]
                 print("shape image_array_tests[position_query].unsqueeze(0)", image_array_tests[position_query].unsqueeze(0).shape) #[1, 64]
                 
-                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)) # (1, 64)
+                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)) # (N, 25, 2048) <=> (N, 64)
+                print("shape sketch_feature: ", sketch_feature.shape)
+                print("shape sketch_feature[-1].unsqueeze(0): ", sketch_feature[-1].unsqueeze(0).shape) #[1, 25, 2048]
+                
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 
