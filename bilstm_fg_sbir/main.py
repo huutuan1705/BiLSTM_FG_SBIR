@@ -76,10 +76,10 @@ if __name__ == "__main__":
     for i_epoch in range(args.epochs):
         print(f"Epoch: {i_epoch+1} / {args.epochs}")
         loss = 0
-        # for _, batch_data in enumerate(tqdm(dataloader_train)):
-        #     step_count = step_count + 1
-        #     model.train()
-        #     loss = model.train_model(batch=batch_data)
+        for _, batch_data in enumerate(tqdm(dataloader_train)):
+            step_count = step_count + 1
+            model.train()
+            loss = model.train_model(batch=batch_data)
         
         scheduler.step()
         with torch.no_grad():
