@@ -67,8 +67,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_feature = self.sketch_attention(sketch_feature).unsqueeze(0) # (1, 25, 2048)
             sketch_feature = self.bilstm_network(sketch_feature).squeeze(0) # (25, 64)
             
-            positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[1], 1)
-            negative_feature_raw = negative_feature[i].repeat(sketch_feature.shape[1], 1)
+            positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[0], 1)
+            negative_feature_raw = negative_feature[i].repeat(sketch_feature.shape[0], 1)
             print("shape positive_feature_raw: ", positive_feature_raw.shape)
             print("shape negative_feature_raw: ", negative_feature_raw.shape)
             
