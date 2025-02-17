@@ -115,7 +115,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for idx, batch in enumerate(tqdm(dataloader_test)):
             sketch_feature, positive_feature = self.test_forward(batch)
             sketch_array_tests.append(sketch_feature)
-            sketch_names.append(batch['sketch_path'])
+            sketch_names.extend(batch['sketch_path'])
             
             for i_num, positive_name in enumerate(batch['positive_path']): 
                 if positive_name not in image_names:
@@ -125,7 +125,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_array_tests = torch.stack(sketch_array_tests)
         image_array_tests = torch.stack(image_array_tests)
         
-        # print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
+        print("sketch_array_tests shape: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0])
 
@@ -135,23 +135,22 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        # print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
             sketch_name = sketch_names[i_batch][0]
-            # print(f'sketch_name: {sketch_name}')
             
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            # print("sanpled_batch shape: ", sanpled_batch.shape)
+            print("sanpled_batch shape: ", sanpled_batch.shape)
             for i_sketch in range(sanpled_batch.shape[0]):
-                print("shape sanpled_batch[:i_sketch+1]: ", sanpled_batch[:i_sketch+1].shape)
-                print("shape sketch_feature[-1].unsqueeze(0): ", sketch_feature[-1].unsqueeze(0).shape)
-                print("shape image_array_tests: ", image_array_tests.shape)
-                print("shape image_array_tests[position_query].unsqueeze(0)", image_array_tests[position_query].unsqueeze(0).shape)
-                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
+                print("shape sanpled_batch[:i_sketch+1]: ", sanpled_batch[:i_sketch+1].shape) #[1, 25, 2048]
+                print("shape sketch_feature[-1].unsqueeze(0): ", sketch_feature[-1].unsqueeze(0).shape) #[1, 25, 2048]
+                print("shape image_array_tests: ", image_array_tests.shape) #[323, 64]
+                print("shape image_array_tests[position_query].unsqueeze(0)", image_array_tests[position_query].unsqueeze(0).shape) #[1, 64]
+                
+                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)) # (1, 64)
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 
