@@ -27,7 +27,7 @@ class BiLSTM(nn.Module):
         x = Linear_global(feature_num=64).to(device)(x)
         return x # (N, 64)  
 
-# x = torch.randn(48, 25, 2048)
+# x = torch.randn(1, 25, 2048)
 # model = BiLSTM(None, input_size=2048)
 # x = model(x)
-# print(x.shape) # (N, 64)
+# print(x[:, -1, :].shape) # (N, 64)
