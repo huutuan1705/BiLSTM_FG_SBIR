@@ -47,7 +47,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     def train_model(self, batch):
         self.train()
         self.optimizer.zero_grad()
-        
+        print("len batch['positive_img']: ", len(batch['positive_img']))
+        print("batch['positive_img'][0]: ", batch['positive_img'][0])
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
         
