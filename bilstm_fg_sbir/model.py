@@ -150,6 +150,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 print("shape sanpled_batch[:i_sketch+1]: ", sanpled_batch[:i_sketch+1].shape)
                 print("shape sketch_feature[-1].unsqueeze(0): ", sketch_feature[-1].unsqueeze(0).shape)
                 print("shape image_array_tests: ", image_array_tests.shape)
+                print("shape image_array_tests[position_query].unsqueeze(0)", image_array_tests[position_query].unsqueeze(0).shape)
                 sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
