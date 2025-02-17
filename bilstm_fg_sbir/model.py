@@ -115,7 +115,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for idx, batch in enumerate(tqdm(dataloader_test)):
             sketch_feature, positive_feature = self.test_forward(batch)
             sketch_array_tests.append(sketch_feature)
-            sketch_names.extend(batch['sketch_path'])
+            sketch_names.append(batch['sketch_path'])
             
             for i_num, positive_name in enumerate(batch['positive_path']): 
                 if positive_name not in image_names:

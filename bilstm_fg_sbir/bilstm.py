@@ -25,7 +25,7 @@ class BiLSTM(nn.Module):
         
         x = Attention_sequence().to(device)(x)
         x = Linear_global(feature_num=64).to(device)(x)
-        return x # (N, 25, 2048)  
+        return x # (N, 64)  
 
 # x = torch.randn(48, 25, 2048)
 # model = BiLSTM(None, input_size=2048)
