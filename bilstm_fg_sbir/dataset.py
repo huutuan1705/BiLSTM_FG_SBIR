@@ -57,7 +57,7 @@ class FGSBIR_Dataset(Dataset):
             # ========================
             list_sketch_imgs = rasterize_sketch(vector_x)
             if self.on_fly:
-                sketch_imgs = [self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs]
+                sketch_imgs = torch.stack([self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs])
 
             else:
                 sketch_imgs = self.train_transform(Image.fromarray(list_sketch_imgs[-1]).convert("RGB"))

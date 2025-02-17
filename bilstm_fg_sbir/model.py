@@ -47,17 +47,17 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     def train_model(self, batch):
         self.train()
         self.optimizer.zero_grad()
-        print("len batch['positive_img']: ", len(batch['positive_img']))
-        print("batch['positive_img'][0]: ", batch['positive_img'][0])
+        
+        print("len batch['positive_img']: ", len(batch['positive_img'])) # N
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
         
         positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1)
         negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1)
         
-        # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
+        print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs'])) # 25
         sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # (N, 25 3, 299, 299)
-        print("len sketch_imgs_tensor:", len(sketch_imgs_tensor))
+        
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
