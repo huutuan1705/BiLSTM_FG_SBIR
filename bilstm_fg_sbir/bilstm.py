@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from attention import Attention_sequence, Linear_global
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class BiLSTM(nn.Module):
     def __init__(self, args, input_size=2048, bidirectional=True):
@@ -22,8 +23,8 @@ class BiLSTM(nn.Module):
         for _ in range(self.num_bilstm_blocks):
             x, _ = self.bilstm(x)
         
-        x = Attention_sequence()(x)
-        x = Linear_global(feature_num=64)(x)
+        x = Attention_sequence().to(device)(x)
+        x = Linear_global(feature_num=64).to(device)(x)
         return x # (N, 25, 2048)  
 
 # x = torch.randn(48, 25, 2048)
