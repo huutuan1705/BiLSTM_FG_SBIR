@@ -54,6 +54,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1)
         negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1)
         
+        print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
         sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # (N, 25 3, 299, 299)
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
