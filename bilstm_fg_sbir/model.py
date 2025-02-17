@@ -102,7 +102,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        
+        print("sketch_features shape: ", sketch_features.shape)
         return sketch_features.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
