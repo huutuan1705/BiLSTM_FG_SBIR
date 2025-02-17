@@ -55,19 +55,19 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1)
         negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1)
         
-        print("batch['sketch_imgs']: ", batch['sketch_imgs'].shape) # 25
-        # sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # (N, 25 3, 299, 299)
+        # print("batch['sketch_imgs']: ", batch['sketch_imgs'].shape) # (N, 25 3, 299, 299)
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
         
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
-            print("Shape sketch_imgs_tensor[i]: ", sketch_imgs_tensor[i].shape)
+            print("Shape positive_feature[i]: ", positive_feature[i].shape)
+            # print("Shape sketch_imgs_tensor[i]: ", sketch_imgs_tensor[i].shape) (25 3, 299, 299)
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_feature = self.sketch_attention(sketch_feature)
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features)# (N, 2048)
+        sketch_features = self.bilstm_network(sketch_features)# (N, 25, 2048)
         
         sketch_features = sketch_features.unsqueeze(1)
         # sketch_features = self.sketch_linear(sketch_features).unsqueeze(1)
