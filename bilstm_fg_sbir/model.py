@@ -58,24 +58,25 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
         
         loss = 0
+        sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_feature = self.sketch_attention(sketch_feature).unsqueeze(0) # (1, 25, 2048)
             sketch_feature = self.sketch_linear(self.bilstm_network(sketch_feature)).squeeze(0) # (25, 64)
             
-            positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
-            negative_feature_raw = negative_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
+            sketch_features.append(sketch_feature)
+            # positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
+            # negative_feature_raw = negative_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
            
-            loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)      
+            # loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)      
             
-        # sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        # sketch_features = self.bilstm_network(sketch_features)# (N, 25, 2048)
+        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 64)
         
-        # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
+        # print("Sketch feature shape: ", sketch_features.shape) # (N, 25, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
         
-        # loss = self.loss(sketch_features, positive_feature, negative_feature)
+        loss = self.loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
         self.optimizer.step()
 
@@ -141,7 +142,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 # print("shape image_array_tests: ", image_array_tests.shape) #[323, 64]
                 # print("shape image_array_tests[position_query].unsqueeze(0)", image_array_tests[position_query].unsqueeze(0).shape) #[1, 64]
                 
-                sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))) # (1, 25, 2048) => (1, 64)
+                sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[i_sketch].to(device))) # (1, 25, 2048) => (1, 64)
                 # print("shape sketch_feature: ", sketch_feature.shape) #(1, 25, 64)
                 # print("shape sketch_feature[:, -1, :]: ", sketch_feature[:, -1, :].shape) #[1, 25, 64]
                 
