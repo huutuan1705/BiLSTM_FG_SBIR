@@ -27,32 +27,28 @@ class Attention_global(nn.Module):
         fatt1 = self.pool_method(fatt1).view(-1, 2048)
         return  F.normalize(fatt1)
 
-class Attention_sequence(nn.Module):
+class AttentionSequence(nn.Module):
     def __init__(self):
-        super(Attention_sequence, self).__init__()
-        self.net = nn.Sequential(
-            nn.Conv1d(2048, 512, kernel_size=1),  
-            nn.BatchNorm1d(512),
+        super(AttentionSequence, self).__init__()
+        self.attention_net = nn.Sequential(
+            nn.Linear(2048, 512),
+            nn.BatchNorm1d(25),
             nn.ReLU(),
-            nn.Conv1d(512, 1, kernel_size=1)
+            nn.Linear(512, 1)
         )
-
-    def fix_weights(self):
-        for param in self.parameters():
-            param.requires_grad = False
-
+        self.output_layer = nn.Linear(2048, 64)  # Biến đổi đầu ra cuối cùng về (N, 25, 64)
+    
     def forward(self, x):
-        x = x.transpose(1, 2)  # transpose (N, 2048, 25)
-        
-        # get attention weights
-        attn_weights = self.net(x)  # (N, 1, 25)
-        attn_weights = attn_weights.squeeze(1)  # (N, 25)
-        attn_weights = F.softmax(attn_weights, dim=1).unsqueeze(1)  # (N, 1, 25)
-        # print(attn_weights)
-        fatt = x * attn_weights  # (N, 2048, 25)
-        fatt1 = x + fatt
-        fatt1 = F.normalize(fatt1, dim=1)
-        return fatt1.transpose(1, 2) 
+        """
+        x.shape (N, 25, 2048)
+        """
+        attn_weights = self.attention_net(x).squeeze(-1)  # (N, 25)
+        attn_weights = F.softmax(attn_weights, dim=1).unsqueeze(-1)  # (N, 25, 1)
+
+        fatt = x * attn_weights  # (N, 25, 2048)
+        output = x + fatt
+        # output = self.output_layer(fatt1)  # (N, 25, 64)
+        return F.normalize(output, dim=-1) # normalize for final dim
     
 class Linear_global(nn.Module):
     def __init__(self, feature_num):
@@ -72,7 +68,7 @@ class Linear_global(nn.Module):
 
 # N, D = 4, 2048  # Batch size 4, Feature size 2048
 # x = torch.randn(48, 25, 2048)  
-# model = Attention_sequence()
+# model = AttentionSequence()
 # output = model(x)
 
 # print(output.shape)

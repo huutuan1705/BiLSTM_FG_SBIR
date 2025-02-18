@@ -48,37 +48,29 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.train()
         self.optimizer.zero_grad()
         
-        # print("len batch['positive_img']: ", len(batch['positive_img'])) # N
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
-        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
+        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device)) # (N, 2048, 8, 8)
+        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device)) # (N, 2048, 8, 8)
         
-        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1)
-        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1)
+        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1) # (N, 1, 2048)
+        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1) # (N, 1, 2048)
         
         # print("batch['sketch_imgs']: ", batch['sketch_imgs'].shape) # (N, 25 3, 299, 299)
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
         
         loss = 0
-        sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
-            # print("Shape positive_feature[i]: ", positive_feature[i].shape)
-            # print("Shape sketch_imgs_tensor[i]: ", sketch_imgs_tensor[i].shape) (25 3, 299, 299)
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_feature = self.sketch_attention(sketch_feature).unsqueeze(0) # (1, 25, 2048)
             sketch_feature = self.bilstm_network(sketch_feature).squeeze(0) # (25, 64)
             
-            positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[0], 1)
-            negative_feature_raw = negative_feature[i].repeat(sketch_feature.shape[0], 1)
-            # print("shape positive_feature_raw: ", positive_feature_raw.shape)
-            # print("shape negative_feature_raw: ", negative_feature_raw.shape)
-            
+            positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
+            negative_feature_raw = negative_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
+           
             loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)      
             
         # sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         # sketch_features = self.bilstm_network(sketch_features)# (N, 25, 2048)
         
-        # sketch_features = sketch_features.unsqueeze(1)
-        # sketch_features = self.sketch_linear(sketch_features).unsqueeze(1)
         # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
