@@ -142,7 +142,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 # print("shape image_array_tests: ", image_array_tests.shape) #[323, 64]
                 # print("shape image_array_tests[position_query].unsqueeze(0)", image_array_tests[position_query].unsqueeze(0).shape) #[1, 64]
                 
-                sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[i_sketch].to(device))) # (1, 25, 2048) => (1, 64)
+                sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))) # (1, 25, 64)
                 # print("shape sketch_feature: ", sketch_feature.shape) #(1, 25, 64)
                 # print("shape sketch_feature[:, -1, :]: ", sketch_feature[:, -1, :].shape) #[1, 25, 64]
                 
