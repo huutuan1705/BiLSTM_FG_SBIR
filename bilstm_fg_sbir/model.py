@@ -144,10 +144,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 
                 sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))) # (1, 25, 64)
                 # print("shape sketch_feature: ", sketch_feature.shape) #(1, 25, 64)
-                # print("shape sketch_feature[:, -1, :]: ", sketch_feature[:, -1, :].shape) #[1, 1, 64]
+                # print("shape sketch_feature[:, -1, :]: ", sketch_feature[:, -1, :].shape) #[1, 64]
                 
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
+                distance = F.pairwise_distance(sketch_feature[-1].to(device), image_array_tests.to(device))
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
