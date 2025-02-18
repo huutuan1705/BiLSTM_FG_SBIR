@@ -71,7 +71,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             # loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)      
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
+        sketch_features = self.sketch_linear(self.bilstm_network(sketch_features)) # (N, 25, 64)
         # print("Sketch feature shape: ", sketch_features.shape) # (N, 25, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
