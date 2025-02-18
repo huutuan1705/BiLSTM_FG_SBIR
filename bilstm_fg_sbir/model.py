@@ -64,7 +64,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         sketch_features = self.bilstm_network(sketch_features)# (N, 2048)
         
-        sketch_features = self.sketch_linear(sketch_features).unsqueeze(1)
+        # sketch_features = self.sketch_linear(sketch_features).unsqueeze(1)
         # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
@@ -133,7 +133,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             # print("sanpled_batch shape: ", sanpled_batch.shape)
             for i_sketch in range(sanpled_batch.shape[0]):
-                sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)))
+                # sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)))
+                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 

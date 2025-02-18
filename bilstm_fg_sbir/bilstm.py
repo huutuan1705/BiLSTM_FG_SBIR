@@ -30,7 +30,7 @@ class BiLSTM(nn.Module):
         x, _ = self.bilstm1(x)  # (batch, 25, 1024)
         x, _ = self.bilstm2(x)  # (batch, 25, 64)
         
-        # Cơ chế Attention
+        # Attention
         attn_weights = torch.softmax(self.attention(x), dim=1)  # (batch, 25, 64)
         context_vector = torch.sum(attn_weights * x, dim=1)  # (batch, 64)
         
