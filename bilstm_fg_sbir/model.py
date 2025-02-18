@@ -38,7 +38,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.linear.fix_weights()
         
         self.sketch_linear = Linear_global(feature_num=self.args.output_size)
-        self.sketch_linear.fix_weights()
+        # self.sketch_linear.fix_weights()
         
         self.optimizer = optim.Adam([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
@@ -61,7 +61,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_feature = self.sketch_attention(sketch_feature).unsqueeze(0) # (1, 25, 2048)
-            sketch_feature = self.bilstm_network(sketch_feature).squeeze(0) # (25, 64)
+            sketch_feature = self.sketch_linear(self.bilstm_network(sketch_feature)).squeeze(0) # (25, 64)
             
             positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
             negative_feature_raw = negative_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
@@ -114,8 +114,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     image_names.append(batch['positive_sample'][i_num])
                     image_array_tests.append(positive_feature[i_num])
                 
-        sketch_array_tests = torch.stack(sketch_array_tests)
-        image_array_tests = torch.stack(image_array_tests)
+        sketch_array_tests = torch.stack(sketch_array_tests) # [323, 1, 25, 2048]
+        image_array_tests = torch.stack(image_array_tests) 
         
         # print("sketch_array_tests shape: ", sketch_array_tests.shape) # [323, 1, 25, 2048]
         
