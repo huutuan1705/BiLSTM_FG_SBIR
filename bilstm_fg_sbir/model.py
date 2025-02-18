@@ -62,9 +62,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features)# (N, 2048)
+        sketch_features = self.bilstm_network(sketch_features).unsqueeze(1) # (N, 2048)
         
+        # sketch_features = self.bilstm_network(sketch_features)# (N, 2048)
         # sketch_features = self.sketch_linear(sketch_features).unsqueeze(1)
+        
         # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
