@@ -61,8 +61,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_feature = self.sketch_attention(sketch_feature).unsqueeze(0) # (1, 25, 2048)
-            sketch_feature = self.sketch_linear(self.bilstm_network(sketch_feature)).squeeze(0) # (25, 64)
+            sketch_feature = self.sketch_attention(sketch_feature)# (1, 25, 2048)
+            # sketch_feature = self.sketch_linear(self.bilstm_network(sketch_feature)).squeeze(0) # (25, 64)
             
             sketch_features.append(sketch_feature)
             # positive_feature_raw = positive_feature[i].repeat(sketch_feature.shape[0], 1) # (25, 64)
@@ -70,8 +70,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
            
             # loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)      
             
-        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 64)
-        
+        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
+        sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
         # print("Sketch feature shape: ", sketch_features.shape) # (N, 25, 64)
         # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
         # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
