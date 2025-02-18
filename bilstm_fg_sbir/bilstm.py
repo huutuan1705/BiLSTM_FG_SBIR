@@ -23,7 +23,7 @@ class BiLSTM(nn.Module):
         for _ in range(self.num_bilstm_blocks):
             x, _ = self.bilstm(x) # (N, 25, 2048)
         
-        x = AttentionSequence().to(device)(x)
+        # x = AttentionSequence().to(device)(x)
         # x = Linear_global(feature_num=64).to(device)(x)
         
         return x # (N, 25, 2048)  
