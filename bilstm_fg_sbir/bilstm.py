@@ -31,10 +31,11 @@ class BiLSTM(nn.Module):
         x, _ = self.bilstm2(x)  # (batch, 25, 64)
         
         # Attention
-        attn_weights = torch.softmax(self.attention(x), dim=1)  # (batch, 25, 64)
-        context_vector = torch.sum(attn_weights * x, dim=1)  # (batch, 64)
+        # attn_weights = torch.softmax(self.attention(x), dim=1)  # (batch, 25, 64)
+        # context_vector = torch.sum(attn_weights * x, dim=1)  # (batch, 64)
         
-        return context_vector
+        x = x[:, -1, :]       
+        return x
 
 
 # model = BiLSTM()
