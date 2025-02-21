@@ -129,9 +129,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             # print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
             for i_sketch in range(sanpled_batch.shape[0]):
                 sketch_feature = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(F.normalize(sketch_feature[:, -1, :].unsqueeze(0).to(device)), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(F.normalize(sketch_feature[:, -1, :].unsqueeze(0).to(device)), image_array_tests.to(device))
+                target_distance = F.pairwise_distance(F.normalize(sketch_feature[:, -1, :]).unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(F.normalize(sketch_feature[:, -1, :]).unsqueeze(0).to(device), image_array_tests.to(device))
                 
+                print("target_distance: ", target_distance)
+                print("distance: ", distance)
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
                 
@@ -142,8 +144,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
             
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
-            print("len(mean_rank_percentile): ", len(mean_rank_percentile))
-            print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
+            # print("len(mean_rank_percentile): ", len(mean_rank_percentile))
+            # print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
         
         top1_accuracy = rank_all[:, -1].le(1).sum().numpy() / rank_all.shape[0]
