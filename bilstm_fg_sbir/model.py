@@ -73,7 +73,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_feature = self.sketch_attention(sketch_feature) # (25, 2048)
             sketch_feature = self.bilstm_network(sketch_feature.unsqueeze(0)) #(1, 25, 64)
             
-            sketch_features.append(sketch_feature)
+            sketch_features.append(F.normalize(sketch_feature, dim=-1))
             # positive_feature_raw = positive_feature[i].unsqueeze(0) # (1, 64)
             # negative_feature_raw = negative_feature[i].unsqueeze(0) # (1, 64)
             
@@ -149,8 +149,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sample_batch = sample_batch.unsqueeze(0)
             for i_sketch in range(sample_batch.shape[0]):
                 sketch_feature = self.bilstm_network(sample_batch[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
+                target_distance = F.pairwise_distance(F.normalize(sketch_feature[-1]).unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(F.normalize(sketch_feature[-1]).unsqueeze(0).to(device), image_array_tests.to(device))
                 
                 # print("target_distance: ", target_distance)
                 # print("distance: ", distance)

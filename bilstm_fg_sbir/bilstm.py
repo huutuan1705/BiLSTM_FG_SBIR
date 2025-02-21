@@ -19,14 +19,14 @@ class BiLSTM(nn.Module):
         self.bilstm = nn.LSTM(input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
                             batch_first=True, bidirectional=bidirectional)
         self.attention = AttentionSequence()
-        self.linear = Linear_global(feature_num=64)
+        self.bilstm1 = nn.LSTM(input_size=self.input_size, hidden_size=512, num_layers=self.num_layers,
+                            batch_first=True, bidirectional=bidirectional)
+        self.bilstm2 = nn.LSTM(input_size=1024, hidden_size=32, num_layers=self.num_layers,
+                            batch_first=True, bidirectional=bidirectional)
         
     def forward(self, x):
-        for _ in range(self.num_bilstm_blocks):
-            x, _ = self.bilstm(x)
-            
-        x = self.attention(x)
-        # x = self.linear(x)      
+        x, _ = self.bilstm1(x)   
+        x, _ = self.bilstm2(x)   
         return x
     
 

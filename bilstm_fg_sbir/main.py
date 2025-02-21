@@ -79,7 +79,7 @@ if __name__ == "__main__":
         loss = 0
         for _, batch_data in enumerate(tqdm(dataloader_train)):
             step_count = step_count + 1
-            model.bilstm_network.train()
+            model.train()
             loss = model.train_model(batch=batch_data)
         
         scheduler.step()
