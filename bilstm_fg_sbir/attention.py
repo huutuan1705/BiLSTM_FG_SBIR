@@ -32,23 +32,32 @@ class AttentionSequence(nn.Module):
         super(AttentionSequence, self).__init__()
         self.attention_net = nn.Sequential(
             nn.Linear(2048, 512),
-            nn.BatchNorm1d(25),
+            nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Linear(512, 1)
         )
         self.output_layer = nn.Linear(2048, 64)  # Biến đổi đầu ra cuối cùng về (N, 25, 64)
     
     def forward(self, x):
-        """
-        x.shape (N, 25, 2048)
-        """
-        attn_weights = self.attention_net(x).squeeze(-1)  # (N, 25)
-        attn_weights = F.softmax(attn_weights, dim=1).unsqueeze(-1)  # (N, 25, 1)
-
-        fatt = x * attn_weights  # (N, 25, 2048)
-        output = x + fatt
-        # output = self.output_layer(fatt1)  # (N, 25, 64)
-        return F.normalize(output, dim=-1) # normalize for final dim
+        batch_size = x.size(0)
+        x_reshaped = x.view(-1, x.size(-1))
+        attention_weights = self.attention_net(x_reshaped)
+        attention_weights = attention_weights.view(batch_size, -1)
+        attention_weights = nn.Softmax(dim=1)(attention_weights)
+        attention_weights = attention_weights.unsqueeze(-1)
+        weighted = x * attention_weights
+        enhanced = x + weighted
+        
+        enhanced_flat = enhanced.view(-1, enhanced.size(-1))
+        
+        projected = self.output_layer(enhanced_flat)
+        
+        output = projected.view(batch_size, 25, 64)
+        
+        # Normalize output
+        output = F.normalize(output, dim=-1)
+        
+        return output
     
 class Linear_global(nn.Module):
     def __init__(self, feature_num):
@@ -66,9 +75,9 @@ class Linear_global(nn.Module):
 # model = Attention_global()
 # output = model(input_tensor)
 
-# N, D = 4, 2048  # Batch size 4, Feature size 2048
-# x = torch.randn(48, 25, 2048)  
-# model = AttentionSequence()
-# output = model(x)
+N, D = 4, 2048  # Batch size 4, Feature size 2048
+x = torch.randn(48, 25, 2048)  
+model = AttentionSequence()
+output = model(x)
 
-# print(output.shape)
+print(output.shape)
