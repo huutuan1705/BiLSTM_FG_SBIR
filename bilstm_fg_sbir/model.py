@@ -150,23 +150,23 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 
-                print("target_distance: ", target_distance)
-                print("distance: ", distance)
-                print("i_batch: ", i_batch)
-                print("i_sketch: ", i_sketch)
+                # print("target_distance: ", target_distance)
+                # print("distance: ", distance)
+                # print("i_batch: ", i_batch)
+                # print("i_sketch: ", i_sketch)
                 rank_all[i_batch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch] = (len(distance) - rank_all[i_batch]) / (len(distance) - 1)
                 
                 
                 if rank_all[i_batch].item() == 0:
-                    mean_rank.append(0)
+                    mean_rank.append(0.0001)
                 else:
                     mean_rank.append(1/rank_all[i_batch].item())
                     mean_rank_percentile.append(rank_all_percentile[i_batch].item())
 
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
-            break
+
         
         print("rank_all: ", rank_all)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
