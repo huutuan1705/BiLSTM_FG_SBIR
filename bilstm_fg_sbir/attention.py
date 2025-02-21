@@ -52,7 +52,7 @@ class AttentionSequence(nn.Module):
         
         projected = self.output_layer(enhanced_flat)
         
-        output = projected.view(batch_size, 25, 64)
+        output = projected.view(batch_size, 25, -1)
         
         # Normalize output
         output = F.normalize(output, dim=-1)
