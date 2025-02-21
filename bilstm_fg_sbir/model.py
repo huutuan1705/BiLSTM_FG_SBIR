@@ -71,17 +71,19 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device)) # (25, 2048, 8, 8)
             sketch_feature = self.sketch_attention(sketch_feature) # (25, 2048)
-            sketch_feature = self.bilstm_network(sketch_feature.unsqueeze(0)).squeeze(0) #(25, 64)
+            sketch_feature = self.bilstm_network(sketch_feature.unsqueeze(0)) #(1, 25, 64)
             
-            positive_feature_raw = positive_feature[i].unsqueeze(0) # (1, 64)
-            negative_feature_raw = negative_feature[i].unsqueeze(0) # (1, 64)
+            sketch_features.append(sketch_feature)
+            # positive_feature_raw = positive_feature[i].unsqueeze(0) # (1, 64)
+            # negative_feature_raw = negative_feature[i].unsqueeze(0) # (1, 64)
             
-            positive_feature_raw = positive_feature_raw.repeat(sketch_feature.shape[0], 1) # (25, 64)
-            negative_feature_raw = negative_feature_raw.repeat(sketch_feature.shape[0], 1) # (25, 64)
-            loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)
+            # positive_feature_raw = positive_feature_raw.repeat(sketch_feature.shape[0], 1) # (25, 64)
+            # negative_feature_raw = negative_feature_raw.repeat(sketch_feature.shape[0], 1) # (25, 64)
+            # loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)
         
         # loss = self.compute_loss(sketch_features, positive_feature, negative_feature)
-        
+        sketch_features = torch.stack(sketch_features)
+        loss = self.compute_loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
         self.optimizer.step()
 
@@ -168,7 +170,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
 
         
-        print("rank_all: ", rank_all)
+        # print("rank_all: ", rank_all)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
         top5_accuracy = rank_all.le(5).sum().numpy() / rank_all.shape[0]
         top10_accuracy = rank_all.le(10).sum().numpy() / rank_all.shape[0]
