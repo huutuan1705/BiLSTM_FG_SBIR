@@ -80,7 +80,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             negative_feature_raw = negative_feature_raw.repeat(sketch_feature.shape[0], 1) # (25, 64)
             loss += self.loss(sketch_feature, positive_feature_raw, negative_feature_raw)
         
-        loss = self.compute_loss(sketch_features, positive_feature, negative_feature)
+        # loss = self.compute_loss(sketch_features, positive_feature, negative_feature)
         
         loss.backward()
         self.optimizer.step()
@@ -124,14 +124,14 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         # print("sketch_array_tests shape : ", sketch_array_tests.shape) # [323, 1, 25, 2048]
         
-        sketch_steps = len(sketch_array_tests[0]) # 1
-        print("sketch_steps: ", sketch_steps) # 1
+        # sketch_steps = len(sketch_array_tests[0]) # 1
+        # print("sketch_steps: ", sketch_steps) # 1
 
         avererage_area = []
         avererage_area_percentile = []
         
-        rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
-        rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
+        rank_all = torch.zeros(len(sketch_array_tests), 1)
+        rank_all_percentile = torch.zeros(len(sketch_array_tests), 1)
         
         # print("rank_all_percentile shape: ", rank_all_percentile.shape) #(323, 1)
         for i_batch, sample_batch in enumerate(sketch_array_tests):
@@ -150,11 +150,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 
-                print("target_distance: ", target_distance)
-                print("distance: ", distance)
-                print("distance.le(target_distance).sum(): ", distance.le(target_distance).sum())
-                print("i_batch: ", i_batch)
-                print("i_sketch: ", i_sketch)
+                # print("target_distance: ", target_distance)
+                # print("distance: ", distance)
+                # print("distance.le(target_distance).sum(): ", distance.le(target_distance).sum())
+                # print("i_batch: ", i_batch)
+                # print("i_sketch: ", i_sketch)
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
                 
@@ -170,7 +170,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             break
         
-        print("rank_all[:, -1]: ", rank_all[:, -1])
+        # print("rank_all[:, -1]: ", rank_all[:, -1])
         top1_accuracy = rank_all[:, -1].le(1).sum().numpy() / rank_all.shape[0]
         top5_accuracy = rank_all[:, -1].le(5).sum().numpy() / rank_all.shape[0]
         top10_accuracy = rank_all[:, -1].le(10).sum().numpy() / rank_all.shape[0]
