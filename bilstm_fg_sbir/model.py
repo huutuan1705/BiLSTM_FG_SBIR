@@ -127,7 +127,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        print("rank_all_percentile shape: ", rank_all_percentile.shape) #(323, 1)
+        # print("rank_all_percentile shape: ", rank_all_percentile.shape) #(323, 1)
         for i_batch, sample_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
@@ -137,7 +137,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            print("sample_batch shape: ", sample_batch.shape) # (1, 25, 2048)
+            # print("sample_batch shape: ", sample_batch.shape) # (1, 25, 2048)
             for i_sketch in range(sample_batch.shape[0]):
                 sketch_feature = self.bilstm_network(sample_batch[i_sketch].unsqueeze(0).to(device))
                 target_distance = F.pairwise_distance(sketch_feature[:, -1, :].to(device), image_array_tests[position_query].unsqueeze(0).to(device))
