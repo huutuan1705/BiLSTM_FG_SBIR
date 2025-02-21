@@ -58,10 +58,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         # Tính loss cho từng triplet
         losses = self.loss(anchors_reshaped, positive_reshaped, negative_reshaped)
-        losses = losses.reshape(self.args.batch_size, self.args.num_anchors)
-        mean_loss = losses.mean()
+        # losses = losses.reshape(self.args.batch_size, self.args.num_anchors)
+        # mean_loss = losses.mean()
         
-        return mean_loss
+        return losses
         
     def train_model(self, batch):
         self.train()
