@@ -51,11 +51,11 @@ class AttentionSequence(nn.Module):
         enhanced_flat = enhanced.view(-1, enhanced.size(-1))
         
         projected = self.output_layer(enhanced_flat)
-        
-        output = projected.view(batch_size, 25, -1)
+        print("projected shape: ", projected.shape)
+        output = projected.view(batch_size, 25, 64)
         
         # Normalize output
-        output = F.normalize(output, dim=-1)
+        output = F.normalize(projected, dim=-1)
         
         return output
     
@@ -75,7 +75,7 @@ class Linear_global(nn.Module):
 # model = Attention_global()
 # output = model(input_tensor)
 
-# x = torch.randn(1, 25, 2048)  
-# model = AttentionSequence()
-# output = model(x)
-# print(output.shape)
+x = torch.randn(1, 25, 2048)  
+model = AttentionSequence()
+output = model(x)
+print(output.shape)
