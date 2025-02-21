@@ -166,6 +166,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
 
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
+            break
         
         print("rank_all: ", rank_all)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
