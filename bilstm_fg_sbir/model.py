@@ -132,12 +132,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 target_distance = F.pairwise_distance(F.normalize(sketch_feature[:, -1, :]).unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(F.normalize(sketch_feature[:, -1, :]).unsqueeze(0).to(device), image_array_tests.to(device))
                 
-                print("target_distance: ", target_distance)
-                print("distance: ", distance)
-                print("len(distance): ", len(distance))
-                print("rank_all[i_batch, i_sketch]: ", rank_all[i_batch, i_sketch])
-                rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
-                rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
+                # print("target_distance: ", target_distance)
+                # print("distance: ", distance)
+                # print("len(distance): ", len(distance))
+                # print("rank_all[i_batch, i_sketch]: ", rank_all[i_batch, i_sketch])
+                rank_all[i_batch, i_sketch] = distance[0].le(target_distance[0]).sum()
+                rank_all_percentile[i_batch, i_sketch] = (len(distance[0]) - rank_all[i_batch, i_sketch]) / (len(distance[0]) - 1)
                 
                 if rank_all[i_batch, i_sketch].item() == 0:
                     mean_rank.append(1.)
