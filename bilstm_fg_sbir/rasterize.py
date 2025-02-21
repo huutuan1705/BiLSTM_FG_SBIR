@@ -68,7 +68,7 @@ def preprocess(sketch_points, side=256):
     sketch_points = np.round(sketch_points)
     return sketch_points
 
-def rasterize_sketch(sketch_points):
+def rasterize_sketch(sketch_points, steps):
     sketch_points = preprocess(sketch_points)
-    raster_images, _ = draw_image([sketch_points])
+    raster_images, _ = draw_image([sketch_points], steps=steps+1)
     return raster_images
