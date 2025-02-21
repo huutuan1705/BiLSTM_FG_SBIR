@@ -43,6 +43,25 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer = optim.Adam([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
         ])
+    
+    def compute_batch_triplet_loss(self, anchors, positive, negative):
+        # Expand positive và negative để match với shape của anchors
+        # Shape mới: [batch_size, num_anchors, embedding_dim]
+        positive_expanded = positive.expand(-1, self.args.num_anchors, -1)
+        negative_expanded = negative.expand(-1, self.args.num_anchors, -1)
+        
+        # Tính loss cho tất cả anchors
+        # Reshape về 2D để sử dụng với TripletMarginLoss
+        anchors_reshaped = anchors.reshape(-1, self.args.output_size)
+        positive_reshaped = positive_expanded.reshape(-1, self.args.output_size)
+        negative_reshaped = negative_expanded.reshape(-1, self.args.output_size)
+        
+        # Tính loss cho từng triplet
+        losses = self.loss(anchors_reshaped, positive_reshaped, negative_reshaped)
+        losses = losses.reshape(self.args.batch_size, self.args.num_anchors)
+        mean_loss = losses.mean()
+        
+        return mean_loss
         
     def train_model(self, batch):
         self.train()
@@ -64,7 +83,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
         
-        loss = self.loss(sketch_features, positive_feature, negative_feature)
+        loss = self.compute_batch_triplet_loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
         self.optimizer.step()
 
