@@ -9,13 +9,13 @@ class BiLSTM(nn.Module):
         super(BiLSTM, self).__init__()
         self.args = args
         self.input_size = input_size
-        # self.hidden_size = args.hidden_size
-        # self.num_layers = args.num_layers
-        # self.num_bilstm_blocks = args.num_bilstm_blocks
+        self.hidden_size = args.hidden_size
+        self.num_layers = args.num_layers
+        self.num_bilstm_blocks = args.num_bilstm_blocks
         
-        self.hidden_size = 1024
-        self.num_layers = 1
-        self.num_bilstm_blocks = 2
+        # self.hidden_size = 1024
+        # self.num_layers = 1
+        # self.num_bilstm_blocks = 2
         self.bilstm = nn.LSTM(input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
                             batch_first=True, bidirectional=bidirectional)
         self.attention = AttentionSequence()

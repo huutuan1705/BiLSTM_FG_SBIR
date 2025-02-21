@@ -142,8 +142,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             for i_sketch in range(sample_batch.shape[0]):
                 # print("sample_batch[i_sketch].unsqueeze(0): ", sample_batch[i_sketch].unsqueeze(0).shape)
                 sketch_feature = self.bilstm_network(sample_batch[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(sketch_feature[:, -1, :].to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature[:, -1, :].to(device), image_array_tests.to(device))
+                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
