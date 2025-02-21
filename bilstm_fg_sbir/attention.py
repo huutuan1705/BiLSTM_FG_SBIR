@@ -75,9 +75,7 @@ class Linear_global(nn.Module):
 # model = Attention_global()
 # output = model(input_tensor)
 
-# N, D = 4, 2048  # Batch size 4, Feature size 2048
-# x = torch.randn(48, 25, 2048)  
+# x = torch.randn(1, 25, 2048)  
 # model = AttentionSequence()
 # output = model(x)
-
 # print(output.shape)
