@@ -62,8 +62,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
         
-        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1) # (N, 1, 64)
-        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1) # (N, 1, 64)
+        positive_feature = self.linear(self.attention(positive_feature)) # (N, 64)
+        negative_feature = self.linear(self.attention(negative_feature)) # (N, 64)
         
         sketch_imgs_tensor = batch['sketch_imgs']# (N, 25 3, 299, 299)
         sketch_features = []
