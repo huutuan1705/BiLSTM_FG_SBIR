@@ -26,7 +26,7 @@ class BiLSTM(nn.Module):
             x, _ = self.bilstm(x)
             
         x = self.attention(x)
-        x = self.linear(x)      
+        # x = self.linear(x)      
         return x
     
 
