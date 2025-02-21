@@ -118,9 +118,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_array_tests = torch.stack(sketch_array_tests)
         image_array_tests = torch.stack(image_array_tests)
         
-        # print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
+        print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0]) # 323
+        print("sketch_steps: ", sketch_steps)
 
         avererage_area = []
         avererage_area_percentile = []
@@ -128,7 +129,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        # print("rank_all_percentile shape: ", rank_all_percentile.shape)
+        print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
@@ -138,7 +139,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            # print("sanpled_batch shape: ", sanpled_batch.shape)
+            print("sanpled_batch shape: ", sanpled_batch.shape)
             for i_sketch in range(sanpled_batch.shape[0]):
                 # sketch_feature = self.sketch_linear(self.bilstm_network(sanpled_batch[:i_sketch+1].to(device)))
                 sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
