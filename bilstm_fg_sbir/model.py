@@ -156,7 +156,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
                     all_distances.append(distance)
                 
-                min_distance = torch.max(torch.stack(all_distances), dim=0)[0]
+                min_distance = torch.min(torch.stack(all_distances), dim=0)[0]
                 min_target_distance = torch.min(target_distance)
                 
                 # print("min_target_distance: ", min_target_distance)
