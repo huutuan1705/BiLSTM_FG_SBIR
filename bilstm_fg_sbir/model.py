@@ -158,10 +158,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 
                 min_distance = torch.min(torch.stack(all_distances), dim=0)[0]
                 min_target_distance = torch.min(target_distance)
-                print("min_target_distance: ", min_target_distance)
-                print("min_distance: ", min_distance)
-                print("len(min_distance): ", len(min_distance))
-                print("rank_all[i_batch, i_sketch]: ", rank_all[i_batch, i_sketch])
+                
+                # print("min_target_distance: ", min_target_distance)
+                # print("min_distance: ", min_distance)
+                # print("len(min_distance): ", len(min_distance))
+                
                 rank_all[i_batch, i_sketch] = min_distance.le(min_target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(min_distance) - rank_all[i_batch, i_sketch]) / (len(min_distance) - 1)
                 
