@@ -170,13 +170,15 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 
                 if rank_all[i_batch, i_sketch].item() == 0:
                     mean_rank.append(1.)
+                elif rank_all_percentile[i_batch, i_sketch].item() == 0:
+                    mean_rank_percentile.append(1.)
                 else:
                     mean_rank.append(1/rank_all[i_batch, i_sketch].item())
                     mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
             
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
-            print("len(mean_rank_percentile): ", len(mean_rank_percentile))
-            print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
+            # print("len(mean_rank_percentile): ", len(mean_rank_percentile))
+            # print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
         
         top1_accuracy = rank_all[:, -1].le(1).sum().numpy() / rank_all.shape[0]
