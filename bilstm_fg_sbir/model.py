@@ -147,16 +147,23 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             # print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
             for i_sketch in range(sanpled_batch.shape[0]):
-                sketch_feature = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(sketch_feature[:, -1, :].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature[:, -1, :].unsqueeze(0).to(device), image_array_tests.to(device))
+                sketch_features = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
+                sketch_features = sketch_features.squeeze(0)
                 
-                # print("target_distance: ", target_distance)
-                # print("distance: ", distance)
-                # print("len(distance): ", len(distance))
-                # print("rank_all[i_batch, i_sketch]: ", rank_all[i_batch, i_sketch])
-                rank_all[i_batch, i_sketch] = distance[0].le(target_distance[0]).sum()
-                rank_all_percentile[i_batch, i_sketch] = (len(distance[0]) - rank_all[i_batch, i_sketch]) / (len(distance[0]) - 1)
+                all_distances = []
+                for sketch_feature in sketch_features:
+                    target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                    distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
+                    all_distances.append(distance)
+                
+                min_distance = torch.min(torch.stack(all_distances), dim=0)[0]
+                min_target_distance = torch.min(target_distance)
+                print("min_target_distance: ", min_target_distance)
+                print("min_distance: ", min_distance)
+                print("len(min_distance): ", len(min_distance))
+                print("rank_all[i_batch, i_sketch]: ", rank_all[i_batch, i_sketch])
+                rank_all[i_batch, i_sketch] = min_distance.le(min_target_distance).sum()
+                rank_all_percentile[i_batch, i_sketch] = (len(min_distance) - rank_all[i_batch, i_sketch]) / (len(min_distance) - 1)
                 
                 if rank_all[i_batch, i_sketch].item() == 0:
                     mean_rank.append(1.)
