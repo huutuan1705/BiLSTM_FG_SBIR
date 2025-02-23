@@ -86,7 +86,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         total_loss = 0
         for i in range(sketch_features.shape[1]):  # lặp qua 25 sketches
             anchor = sketch_features[:, i, :]  # (N, 64)
-            anchor = anchor.unsqueeze(1)
+            # anchor = anchor.unsqueeze(1)
             
             loss = self.loss(anchor, positive_feature.squeeze(1), negative_feature.squeeze(1))
             total_loss += loss
