@@ -21,7 +21,7 @@ for sketch_feature in sketch_features:
     all_target_distances.append(target_distance)
 
 # Lấy khoảng cách nhỏ nhất
-min_distance = torch.min(torch.stack(all_distances), dim=0)[0]
+min_distance = torch.max(torch.stack(all_distances), dim=0)[0]
 min_target_distance = torch.min(torch.stack(all_target_distances))
 
 print(sketch_features.shape)
