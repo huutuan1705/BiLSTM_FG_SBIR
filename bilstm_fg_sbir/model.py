@@ -83,11 +83,22 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
         
-        loss = self.compute_batch_triplet_loss(sketch_features, positive_feature, negative_feature)
-        loss.backward()
+        total_loss = 0
+        for i in range(sketch_features.shape[1]):  # lặp qua 25 sketches
+            anchor = sketch_features[:, i, :]  # (N, 64)
+            anchor = anchor.unsqueeze(1)
+            
+            loss = self.loss(anchor, positive_feature.squeeze(1), negative_feature.squeeze(1))
+            total_loss += loss
+            
+        avg_loss = total_loss / sketch_features.shape[1]
+        avg_loss.backward()
+        # loss = self.compute_batch_triplet_loss(sketch_features, positive_feature, negative_feature)
+        # loss.backward()
         self.optimizer.step()
 
-        return loss.item() 
+        # return loss.item() 
+        return avg_loss.item()
     
     def test_forward(self, batch):            #  this is being called only during evaluation
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
@@ -149,24 +160,26 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             for i_sketch in range(sanpled_batch.shape[0]):
                 sketch_features = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
                 sketch_features = sketch_features.squeeze(0)
+                target_distance = F.pairwise_distance(sketch_feature[:, -1, :].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature[:, -1, :].unsqueeze(0).to(device), image_array_tests.to(device))
                 
-                all_distances = []
-                all_target_distances = []
-                for sketch_feature in sketch_features:
-                    target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                    distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
-                    all_distances.append(distance)
-                    all_target_distances.append(target_distance)
+                # all_distances = []
+                # all_target_distances = []
+                # for sketch_feature in sketch_features:
+                #     target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                #     distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
+                #     all_distances.append(distance)
+                #     all_target_distances.append(target_distance)
                 
-                min_distance = torch.max(torch.stack(all_distances), dim=0)[0]
-                min_target_distance = torch.min(torch.stack(all_target_distances))
+                # min_distance = torch.max(torch.stack(all_distances), dim=0)[0]
+                # min_target_distance = torch.min(torch.stack(all_target_distances))
                 
                 # print("min_target_distance: ", min_target_distance)
                 # print("min_distance: ", min_distance)
                 # print("len(min_distance): ", len(min_distance))
                 
-                rank_all[i_batch, i_sketch] = min_distance.le(min_target_distance).sum()
-                rank_all_percentile[i_batch, i_sketch] = (len(min_distance) - rank_all[i_batch, i_sketch]) / (len(min_distance) - 1)
+                rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
+                rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
                 
                 mean_rank.append(1/rank_all[i_batch, i_sketch].item() if rank_all[i_batch, i_sketch].item()!=0 else 1)
                 mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item() if rank_all_percentile[i_batch, i_sketch].item()!=0 else 1)
