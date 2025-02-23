@@ -168,13 +168,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 rank_all[i_batch, i_sketch] = min_distance.le(min_target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(min_distance) - rank_all[i_batch, i_sketch]) / (len(min_distance) - 1)
                 
-                if rank_all[i_batch, i_sketch].item() == 0:
-                    mean_rank.append(1.)
-                elif rank_all_percentile[i_batch, i_sketch].item() == 0:
-                    mean_rank_percentile.append(1.)
-                else:
-                    mean_rank.append(1/rank_all[i_batch, i_sketch].item())
-                    mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
+                mean_rank.append(1/rank_all[i_batch, i_sketch].item() if rank_all[i_batch, i_sketch].item()!=0 else 1)
+                mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item() if rank_all_percentile[i_batch, i_sketch].item()!=0 else 1)
             
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
             # print("len(mean_rank_percentile): ", len(mean_rank_percentile))
