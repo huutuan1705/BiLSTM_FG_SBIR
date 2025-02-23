@@ -39,8 +39,8 @@ class VGG16(nn.Module):
 class InceptionV3(nn.Module):
     def __init__(self, args):
         super(InceptionV3, self).__init__()
-        backbone = models.inception_v3(weights=Inception_V3_Weights.DEFAULT)
-        # backbone = models.inception_v3()
+        # backbone = models.inception_v3(weights=Inception_V3_Weights.DEFAULT)
+        backbone = models.inception_v3()
 
         ## Extract Inception Layers ##
         self.Conv2d_1a_3x3 = backbone.Conv2d_1a_3x3
