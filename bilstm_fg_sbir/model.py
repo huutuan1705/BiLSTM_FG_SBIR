@@ -151,17 +151,19 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 sketch_features = sketch_features.squeeze(0)
                 
                 all_distances = []
+                all_target_distances = []
                 for sketch_feature in sketch_features:
                     target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                     distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
                     all_distances.append(distance)
+                    all_target_distances.append(target_distance)
                 
                 min_distance = torch.max(torch.stack(all_distances), dim=0)[0]
-                min_target_distance = torch.min(target_distance)
+                min_target_distance = torch.min(torch.stack(all_target_distances))
                 
-                print("min_target_distance: ", min_target_distance)
-                print("min_distance: ", min_distance)
-                print("len(min_distance): ", len(min_distance))
+                # print("min_target_distance: ", min_target_distance)
+                # print("min_distance: ", min_distance)
+                # print("len(min_distance): ", len(min_distance))
                 
                 rank_all[i_batch, i_sketch] = min_distance.le(min_target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(min_distance) - rank_all[i_batch, i_sketch]) / (len(min_distance) - 1)
@@ -173,8 +175,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
             
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
-            print("len(mean_rank_percentile): ", len(mean_rank_percentile))
-            print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
+            # print("len(mean_rank_percentile): ", len(mean_rank_percentile))
+            # print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
         
         top1_accuracy = rank_all[:, -1].le(1).sum().numpy() / rank_all.shape[0]
