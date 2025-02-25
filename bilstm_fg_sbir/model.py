@@ -114,11 +114,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            print("sampled_batch shape: ", sampled_batch.shape) # (1, 25, 2048)
+            print("sampled_batch shape: ", sampled_batch.shape) # (25, 2048)
             for i_sketch in range(sampled_batch.shape[0]):
                 sketch_feature = self.bilstm_network(sampled_batch[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), self.Image_Array_Test[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), self.Image_Array_Test.to(device))
+                target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
                 print(f'distance: {len(distance)}')
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
