@@ -80,7 +80,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for idx, sampled_batch in enumerate(tqdm(dataloader_test)):
             sketch_feature_ALL = torch.FloatTensor().to(device)
             
-            for data_sketch in sampled_batch['sketch_img']: 
+            for data_sketch in sampled_batch['sketch_imgs']: 
                 sketch_feature = self.attention(self.sample_embedding_network(data_sketch.to(device)))
                 sketch_feature_ALL = torch.cat((sketch_feature_ALL, sketch_feature.detach()))
             
