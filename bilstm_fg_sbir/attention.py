@@ -8,10 +8,10 @@ class Attention_global(nn.Module):
     def __init__(self):
         super(Attention_global, self).__init__()
         self.pool_method =  nn.AdaptiveMaxPool2d(1) # as default
-        self.net = nn.Sequential(nn.Conv2d(2048, 512, kernel_size=1),
-                                 nn.BatchNorm2d(512),
+        self.net = nn.Sequential(nn.Conv2d(2048, 1024, kernel_size=1),
+                                 nn.BatchNorm2d(1024),
                                  nn.ReLU(),
-                                 nn.Conv2d(512, 1, kernel_size=1))
+                                 nn.Conv2d(1024, 1, kernel_size=1))
     
     def fix_weights(self):
         for x in self.parameters():
