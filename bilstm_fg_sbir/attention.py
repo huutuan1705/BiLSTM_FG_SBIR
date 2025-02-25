@@ -12,7 +12,11 @@ class Attention_global(nn.Module):
                                  nn.BatchNorm2d(1024),
                                  nn.ReLU(),
                                  nn.Conv2d(1024, 1, kernel_size=1))
-       
+        
+    def fix_weights(self):
+        for x in self.parameters():
+            x.requires_grad = False   
+            
     def forward(self, backbone_tensor):
         identify = backbone_tensor
         backbone_tensor_1 = self.net(backbone_tensor)
