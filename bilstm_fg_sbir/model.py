@@ -74,7 +74,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.linear(self.attention(positive_feature))
         
         # print("positive_feature shape: ", positive_feature.shape)
-        sketch_feature =  self.attention(self.sample_embedding_network(batch['sketch_seq'].squeeze(0).to(device)))
+        sketch_feature =  self.attention(self.sample_embedding_network(batch['sketch_imgs'].squeeze(0).to(device)))
         return sketch_feature.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
