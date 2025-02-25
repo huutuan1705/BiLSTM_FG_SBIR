@@ -49,7 +49,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer.zero_grad()
         
         loss = 0
+        print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
         for idx in range(len(batch['sketch_imgs'])):
+            print("batch['sketch_imgs'][idx]: ", batch['sketch_imgs'][idx])
             sketch_seq_feature = self.bilstm_network(self.attention(
                 self.sample_embedding_network(batch['sketch_imgs'][idx].to(device))))
             positive_feature = self.linear(self.attention(
