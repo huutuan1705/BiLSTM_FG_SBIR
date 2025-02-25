@@ -90,8 +90,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             positive_feature_raw = positive_feature[i]
             negative_feature_raw = negative_feature[i]
             
-            positive_feature_raw = positive_feature_raw.repeat(anchor.shape[0])
-            negative_feature_raw = negative_feature_raw.repeat(anchor.shape[0])
+            print("anchor shape:", anchor.shape)
+            print("positive_feature_raw shape:", positive_feature_raw.shape)
+            positive_feature_raw = positive_feature_raw.repeat(anchor.shape[0], 1)
+            negative_feature_raw = negative_feature_raw.repeat(anchor.shape[0], 1)
             
             loss = self.loss(anchor, positive_feature_raw, negative_feature_raw)
             total_loss += loss
