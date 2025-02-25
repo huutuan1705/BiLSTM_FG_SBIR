@@ -101,12 +101,14 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
+        print("image_names: ", image_names)
         print("sketch_array_tests shape: ", len(sketch_array_tests))
         for i_batch, sampled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
             sketch_name = sketch_names[i_batch]
-            # print(f'sketch_name: {sketch_name}')
+            print(f'sketch_name: {sketch_name}')
+            
             
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
