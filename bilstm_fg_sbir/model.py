@@ -81,35 +81,38 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
+        sketch_features = self.bilstm_network(sketch_features) # (N, 1, 64)
         
-        total_loss = 0
-        for i in range(sketch_features.shape[0]):  # lặp qua N batch
-            anchor = sketch_features[i]  # (25, 64)
-            # anchor = anchor.unsqueeze(1)
-            positive_feature_raw = positive_feature[i]
-            negative_feature_raw = negative_feature[i]
+        # total_loss = 0
+        # for i in range(sketch_features.shape[0]):  # lặp qua N batch
+        #     anchor = sketch_features[i]  # (25, 64)
+        #     # anchor = anchor.unsqueeze(1)
+        #     positive_feature_raw = positive_feature[i]
+        #     negative_feature_raw = negative_feature[i]
             
-            # print("anchor shape:", anchor.shape)
-            # print("positive_feature_raw shape:", positive_feature_raw.shape)
-            positive_feature_raw = positive_feature_raw.repeat(anchor.shape[0], 1)
-            negative_feature_raw = negative_feature_raw.repeat(anchor.shape[0], 1)
+        #     # print("anchor shape:", anchor.shape)
+        #     # print("positive_feature_raw shape:", positive_feature_raw.shape)
+        #     positive_feature_raw = positive_feature_raw.repeat(anchor.shape[0], 1)
+        #     negative_feature_raw = negative_feature_raw.repeat(anchor.shape[0], 1)
             
-            loss = self.loss(anchor, positive_feature_raw, negative_feature_raw)
-            total_loss += loss
+        #     loss = self.loss(anchor, positive_feature_raw, negative_feature_raw)
+        #     total_loss += loss
             
         # avg_loss = total_loss / sketch_features.shape[1]
         # avg_loss.backward()
         
-        total_loss.backward()
-        # loss = self.compute_batch_triplet_loss(sketch_features, positive_feature, negative_feature)
-        # loss.backward()
+        # total_loss.backward()
+        
+        
+        loss = self.loss(sketch_features, positive_feature, negative_feature)
+        loss.backward()
+        
         self.optimizer.step()
 
         # return loss.item() 
         # return avg_loss.item()
         
-        return total_loss.item()
+        return loss.item()
     
     def test_forward(self, batch):            #  this is being called only during evaluation
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
@@ -170,8 +173,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             # print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
             for i_sketch in range(sanpled_batch.shape[0]):
                 sketch_features = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(sketch_features[:, -1, :].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_features[:, -1, :].unsqueeze(0).to(device), image_array_tests.to(device))
+                target_distance = F.pairwise_distance(sketch_features.to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_features.to(device), image_array_tests.to(device))
                 
                 # sketch_features = sketch_features.squeeze(0)
                 # all_distances = []
@@ -189,7 +192,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 # print("min_distance: ", min_distance)
                 # print("len(min_distance): ", len(min_distance))
                 
-                rank_all[i_batch, i_sketch] = distance[0].le(target_distance[0]).sum()
+                rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance[0]) - rank_all[i_batch, i_sketch]) / (len(distance[0]) - 1)
                 
                 mean_rank.append(1/rank_all[i_batch, i_sketch].item() if rank_all[i_batch, i_sketch].item()!=0 else 1)

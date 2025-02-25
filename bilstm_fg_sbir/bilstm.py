@@ -31,6 +31,7 @@ class BiLSTM(nn.Module):
         x, _ = self.bilstm1(x)  # (batch, 25, 1024)
         x, _ = self.bilstm2(x)  # (batch, 25, 64)
         
-        x = F.normalize(x, dim=-1)
-        # x = x[:, -1, :]       
-        return x
+        # x = F.normalize(x, dim=-1)
+        x = x[:, -1, :] 
+        x = F.normalize(x) # (N, 64)      
+        return x.unsqueeze(1)
