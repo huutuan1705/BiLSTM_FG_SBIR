@@ -51,12 +51,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         loss = 0
         print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
         for idx in range(len(batch['sketch_imgs'])):
-            print("batch['sketch_imgs'][idx]: ", batch['sketch_imgs'][idx])
             sketch_seq_feature = self.bilstm_network(self.attention(
                 self.sample_embedding_network(batch['sketch_imgs'][idx].to(device))))
             positive_feature = self.linear(self.attention(
                 self.sample_embedding_network(batch['positive_img'][idx].unsqueeze(0).to(device))))
-            # print(f'positive_feature: {positive_feature.shape}')
+            print(f'positive_feature: {positive_feature.shape}')
             negative_feature = self.linear(self.attention(
                 self.sample_embedding_network(batch['negative_img'][idx].unsqueeze(0).to(device))))
             # print(f'negative_feature: {negative_feature.shape}')
