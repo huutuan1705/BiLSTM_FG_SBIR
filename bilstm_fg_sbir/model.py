@@ -90,7 +90,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             if sampled_batch['positive_path'][0] not in image_names:
                 rgb_feature = self.attention(self.sample_embedding_network(sampled_batch['positive_img'].to(device)))
                 image_array_tests = torch.cat((image_array_tests, rgb_feature.detach()))
-        
+                image_names.extend(sampled_batch['positive_path'])
         # print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0])
