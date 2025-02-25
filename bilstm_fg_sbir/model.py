@@ -88,10 +88,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_array_tests.append(sketch_feature_ALL.cpu())
             
             # print("sampled_batch['positive_path']: ", sampled_batch['positive_path'])
-            if sampled_batch['positive_path'][0] not in image_names:
+            if sampled_batch['positive_sample'][0] not in image_names:
                 rgb_feature = self.attention(self.sample_embedding_network(sampled_batch['positive_img'].to(device)))
                 image_array_tests = torch.cat((image_array_tests, rgb_feature.detach()))
-                image_names.extend(sampled_batch['positive_path'])
+                image_names.extend(sampled_batch['positive_sample'])
         # print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0])
@@ -102,7 +102,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        print("image_names: ", image_names)
+        # print("image_names: ", image_names)
         print("sketch_array_tests shape: ", len(sketch_array_tests))
         for i_batch, sampled_batch in enumerate(sketch_array_tests):
             mean_rank = []
