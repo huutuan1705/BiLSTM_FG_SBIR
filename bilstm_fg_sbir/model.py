@@ -117,12 +117,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            # print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
+            print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
             for i_sketch in range(sanpled_batch.shape[0]):
-                sketch_features = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
+                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), self.Image_Array_Test[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), self.Image_Array_Test.to(device))
-                # print(f'distance: {len(distance)}')
+                print(f'distance: {len(distance)}')
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance[0]) - rank_all[i_batch, i_sketch]) / (len(distance[0]) - 1)
@@ -131,8 +131,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item() if rank_all_percentile[i_batch, i_sketch].item()!=0 else 1)
             
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
-            # print("len(mean_rank_percentile): ", len(mean_rank_percentile))
-            # print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
+            
+            print("len(mean_rank_percentile): ", len(mean_rank_percentile))
+            print("np.sum(mean_rank_percentile): ", np.sum(mean_rank_percentile))
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
         
         top1_accuracy = rank_all[:, -1].le(1).sum().numpy() / rank_all.shape[0]
