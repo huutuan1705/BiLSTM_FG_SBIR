@@ -43,75 +43,28 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer = optim.Adam([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
         ])
-    
-    def compute_batch_triplet_loss(self, anchors, positive, negative):
-        # Expand positive và negative để match với shape của anchors
-        # Shape mới: [batch_size, num_anchors, embedding_dim]
-        positive_expanded = positive.expand(-1, self.args.num_anchors, -1)
-        negative_expanded = negative.expand(-1, self.args.num_anchors, -1)
-        
-        # Tính loss cho tất cả anchors
-        # Reshape về 2D để sử dụng với TripletMarginLoss
-        anchors_reshaped = anchors.reshape(-1, self.args.output_size)
-        positive_reshaped = positive_expanded.reshape(-1, self.args.output_size)
-        negative_reshaped = negative_expanded.reshape(-1, self.args.output_size)
-        
-        # Tính loss cho từng triplet
-        losses = self.loss(anchors_reshaped, positive_reshaped, negative_reshaped)
-        # losses = losses.reshape(self.args.batch_size, self.args.num_anchors)
-        # mean_loss = losses.mean()
-        
-        return losses
         
     def train_model(self, batch):
         self.train()
         self.optimizer.zero_grad()
         
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
-        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
-        
-        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1) # (N, 1, 64)
-        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1) # (N, 1, 64)
-        
-        sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
-        sketch_features = []
-        for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_feature = self.attention(sketch_feature)
-            sketch_features.append(sketch_feature)
+        loss = 0
+        for idx in range(len(batch['sketch_imgs'])):
+            sketch_seq_feature = self.bilstm_network(self.attention(
+                self.sample_embedding_network(batch['sketch_imgs'][idx].to(device))))
+            positive_feature = self.linear(self.attention(
+                self.sample_embedding_network(batch['positive_img'][idx].unsqueeze(0).to(device))))
+            # print(f'positive_feature: {positive_feature.shape}')
+            negative_feature = self.linear(self.attention(
+                self.sample_embedding_network(batch['negative_img'][idx].unsqueeze(0).to(device))))
+            # print(f'negative_feature: {negative_feature.shape}')
+            positive_feature = positive_feature.repeat(sketch_seq_feature.shape[0], 1)
+            negative_feature = negative_feature.repeat(sketch_seq_feature.shape[0], 1)
             
-        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features) # (N, 1, 64)
-        
-        # total_loss = 0
-        # for i in range(sketch_features.shape[0]):  # lặp qua N batch
-        #     anchor = sketch_features[i]  # (25, 64)
-        #     # anchor = anchor.unsqueeze(1)
-        #     positive_feature_raw = positive_feature[i]
-        #     negative_feature_raw = negative_feature[i]
-            
-        #     # print("anchor shape:", anchor.shape)
-        #     # print("positive_feature_raw shape:", positive_feature_raw.shape)
-        #     positive_feature_raw = positive_feature_raw.repeat(anchor.shape[0], 1)
-        #     negative_feature_raw = negative_feature_raw.repeat(anchor.shape[0], 1)
-            
-        #     loss = self.loss(anchor, positive_feature_raw, negative_feature_raw)
-        #     total_loss += loss
-            
-        # avg_loss = total_loss / sketch_features.shape[1]
-        # avg_loss.backward()
-        
-        # total_loss.backward()
-        
-        
-        loss = self.loss(sketch_features, positive_feature, negative_feature)
-        loss.backward()
-        
-        self.optimizer.step()
+            loss += self.loss(sketch_seq_feature, positive_feature, negative_feature) 
 
-        # return loss.item() 
-        # return avg_loss.item()
-        
+        loss.backward()
+        self.optimizer.step()
         return loss.item()
     
     def test_forward(self, batch):            #  this is being called only during evaluation
@@ -119,16 +72,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.linear(self.attention(positive_feature))
         
         # print("positive_feature shape: ", positive_feature.shape)
-        sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
-        sketch_features = []
-        for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_feature = self.attention(sketch_feature)
-            sketch_features.append(sketch_feature)
-            
-        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        
-        return sketch_features.cpu(), positive_feature.cpu()
+        sketch_feature =  self.attention(self.sample_embedding_network(batch['sketch_seq'].squeeze(0).to(device)))
+        return sketch_feature.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
         self.eval()
@@ -172,25 +117,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             # print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
             for i_sketch in range(sanpled_batch.shape[0]):
-                sketch_features = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(sketch_features.to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_features.to(device), image_array_tests.to(device))
-                
-                # sketch_features = sketch_features.squeeze(0)
-                # all_distances = []
-                # all_target_distances = []
-                # for sketch_feature in sketch_features:
-                #     target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                #     distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
-                #     all_distances.append(distance)
-                #     all_target_distances.append(target_distance)
-                
-                # min_distance = torch.max(torch.stack(all_distances), dim=0)[0]
-                # min_target_distance = torch.min(torch.stack(all_target_distances))
-                
-                # print("min_target_distance: ", min_target_distance)
-                # print("min_distance: ", min_distance)
-                # print("len(min_distance): ", len(min_distance))
+                sketch_features = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
+                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), self.Image_Array_Test[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), self.Image_Array_Test.to(device))
+                # print(f'distance: {len(distance)}')
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance[0]) - rank_all[i_batch, i_sketch]) / (len(distance[0]) - 1)
