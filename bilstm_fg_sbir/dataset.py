@@ -1,5 +1,6 @@
 import os
 import torch
+import random
 import pickle 
 
 from PIL import Image
@@ -7,6 +8,8 @@ from random import randint
 from torch.utils.data import Dataset
 from utils import get_transform
 from rasterize import rasterize_sketch
+import torchvision.transforms.functional as F
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -53,22 +56,35 @@ class FGSBIR_Dataset(Dataset):
             
             vector_x = self.coordinate[sketch_path]
             
-            # List sketch image
-            # ========================
             list_sketch_imgs = rasterize_sketch(vector_x, self.args.num_anchors)
             if self.on_fly:
-                sketch_imgs = [self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs]
+                sketch_imgs = [Image.fromarray(sk_img).convert("RGB") for sk_img in list_sketch_imgs]
 
             else:
                 sketch_imgs = self.train_transform(Image.fromarray(list_sketch_imgs[-1]).convert("RGB"))
-            # ========================
-            
+
             positive_image = Image.open(positive_path).convert("RGB")
             negative_image = Image.open(negative_path).convert("RGB")
+            
+            n_flip = random.random()
+            if n_flip > 0.5:
+
+                if self.on_fly == False:
+                    sketch_imgs = F.hflip(sketch_imgs)
+                else:
+                    sketch_imgs = [F.hflip(sk_img) for sk_img in sketch_imgs]
+
+                positive_img = F.hflip(positive_img)
+                negetive_img = F.hflip(negetive_img)
             
             positive_image = self.train_transform(positive_image)
             negative_image = self.train_transform(negative_image)
             
+            if self.on_fly == False:
+                sketch_imgs = self.train_transform(sketch_imgs)
+            else:
+                sketch_imgs = [self.train_transform(sk_img) for sk_img in sketch_imgs]
+                
             sample = {
                 'sketch_imgs': sketch_imgs, 'sketch_path': sketch_path,
                 'positive_img': positive_image, 'positive_path': positive_path,
