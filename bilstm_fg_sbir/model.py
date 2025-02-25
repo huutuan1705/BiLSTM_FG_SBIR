@@ -87,7 +87,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_names.extend(sampled_batch['sketch_path'])
             sketch_array_tests.append(sketch_feature_ALL.cpu())
             
-            if sanpled_batch['positive_path'][0] not in image_names:
+            if sampled_batch['positive_path'][0] not in image_names:
                 rgb_feature = self.attention(self.sample_embedding_network(sampled_batch['positive_img'].to(device)))
                 image_array_tests = torch.cat((image_array_tests, rgb_feature.detach()))
         
@@ -102,7 +102,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
         print("sketch_array_tests shape: ", sketch_array_tests.shape)
-        for i_batch, sanpled_batch in enumerate(sketch_array_tests):
+        for i_batch, sampled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
             sketch_name = sketch_names[i_batch]
@@ -111,9 +111,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
-            for i_sketch in range(sanpled_batch.shape[0]):
-                sketch_feature = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
+            print("sampled_batch shape: ", sampled_batch.shape) # (1, 25, 2048)
+            for i_sketch in range(sampled_batch.shape[0]):
+                sketch_feature = self.bilstm_network(sampled_batch[i_sketch].unsqueeze(0).to(device))
                 target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), self.Image_Array_Test[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), self.Image_Array_Test.to(device))
                 print(f'distance: {len(distance)}')
