@@ -12,18 +12,15 @@ class Attention_global(nn.Module):
                                  nn.BatchNorm2d(1024),
                                  nn.ReLU(),
                                  nn.Conv2d(1024, 1, kernel_size=1))
-    
-    def fix_weights(self):
-        for x in self.parameters():
-            x.requires_grad = False
-              
+       
     def forward(self, backbone_tensor):
+        identify = backbone_tensor
         backbone_tensor_1 = self.net(backbone_tensor)
         backbone_tensor_1 = backbone_tensor_1.view(backbone_tensor_1.size(0), -1)
         backbone_tensor_1 = nn.Softmax(dim=1)(backbone_tensor_1)
         backbone_tensor_1 = backbone_tensor_1.view(backbone_tensor_1.size(0), 1, backbone_tensor.size(2), backbone_tensor.size(3))
-        fatt = backbone_tensor*backbone_tensor_1
-        fatt1 = backbone_tensor +fatt
+        fatt = identify*backbone_tensor_1
+        fatt1 = identify +fatt
         fatt1 = self.pool_method(fatt1).view(-1, 2048)
         return  F.normalize(fatt1)
 
