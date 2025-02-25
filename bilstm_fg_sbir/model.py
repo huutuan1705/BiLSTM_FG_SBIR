@@ -68,34 +68,28 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         loss.backward()
         self.optimizer.step()
         return loss.item()
-    
-    def test_forward(self, batch):            #  this is being called only during evaluation
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
-        positive_feature = self.linear(self.attention(positive_feature))
-        
-        # print("positive_feature shape: ", positive_feature.shape)
-        sketch_feature =  self.attention(self.sample_embedding_network(batch['sketch_imgs'].squeeze(0).to(device)))
-        return sketch_feature.cpu(), positive_feature.cpu()
+
     
     def evaluate(self, dataloader_test):
         self.eval()
         sketch_array_tests = []
         sketch_names = []
-        image_array_tests = []
+        image_array_tests = torch.FloatTensor().to(device)
         image_names = []
         
-        for idx, batch in enumerate(tqdm(dataloader_test)):
-            sketch_feature, positive_feature = self.test_forward(batch)
-            sketch_array_tests.append(sketch_feature)
-            sketch_names.append(batch['sketch_path'])
+        for idx, sampled_batch in enumerate(tqdm(dataloader_test)):
+            sketch_feature_ALL = torch.FloatTensor().to(device)
             
-            for i_num, positive_name in enumerate(batch['positive_path']): 
-                if positive_name not in image_names:
-                    image_names.append(batch['positive_sample'][i_num])
-                    image_array_tests.append(positive_feature[i_num])
-                
-        sketch_array_tests = torch.stack(sketch_array_tests)
-        image_array_tests = torch.stack(image_array_tests)
+            for data_sketch in sampled_batch['sketch_img']: 
+                sketch_feature = self.attention(self.sample_embedding_network(data_sketch.to(device)))
+                sketch_feature_ALL = torch.cat((sketch_feature_ALL, sketch_feature.detach()))
+            
+            sketch_names.extend(sampled_batch['sketch_path'])
+            sketch_array_tests.append(sketch_feature_ALL.cpu())
+            
+            if sanpled_batch['positive_path'][0] not in image_names:
+                rgb_feature = self.attention(self.sample_embedding_network(sampled_batch['positive_img'].to(device)))
+                image_array_tests = torch.cat((image_array_tests, rgb_feature.detach()))
         
         # print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
         
@@ -107,11 +101,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        # print("rank_all_percentile shape: ", rank_all_percentile.shape)
+        print("sketch_array_tests shape: ", sketch_array_tests.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
-            sketch_name = sketch_names[i_batch][0]
+            sketch_name = sketch_names[i_batch]
             # print(f'sketch_name: {sketch_name}')
             
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
@@ -119,9 +113,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
             for i_sketch in range(sanpled_batch.shape[0]):
-                sketch_feature = self.bilstm_network(sanpled_batch[:i_sketch+1].to(device))
-                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), self.Image_Array_Test[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), self.Image_Array_Test.to(device))
+                sketch_feature = self.bilstm_network(sanpled_batch[i_sketch].unsqueeze(0).to(device))
+                target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), self.Image_Array_Test[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), self.Image_Array_Test.to(device))
                 print(f'distance: {len(distance)}')
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
