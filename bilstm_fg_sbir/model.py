@@ -76,29 +76,38 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_feature = self.sketch_attention(sketch_feature)
+            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
+            sketch_feature = self.attention(sketch_feature)
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
         sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
         
         total_loss = 0
-        for i in range(sketch_features.shape[1]):  # lặp qua 25 sketches
-            anchor = sketch_features[:, i, :]  # (N, 64)
+        for i in range(sketch_features.shape[0]):  # lặp qua N batch
+            anchor = sketch_features[i]  # (25, 64)
             # anchor = anchor.unsqueeze(1)
+            positive_feature_raw = positive_feature[i]
+            negative_feature_raw = negative_feature[i]
             
-            loss = self.loss(anchor, positive_feature.squeeze(1), negative_feature.squeeze(1))
+            positive_feature_raw = positive_feature_raw.repeat(anchor.shape[0])
+            negative_feature_raw = negative_feature_raw.repeat(anchor.shape[0])
+            
+            loss = self.loss(anchor, positive_feature_raw, negative_feature_raw)
             total_loss += loss
             
-        avg_loss = total_loss / sketch_features.shape[1]
-        avg_loss.backward()
+        # avg_loss = total_loss / sketch_features.shape[1]
+        # avg_loss.backward()
+        
+        total_loss.backward()
         # loss = self.compute_batch_triplet_loss(sketch_features, positive_feature, negative_feature)
         # loss.backward()
         self.optimizer.step()
 
         # return loss.item() 
-        return avg_loss.item()
+        # return avg_loss.item()
+        
+        return total_loss.item()
     
     def test_forward(self, batch):            #  this is being called only during evaluation
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
@@ -108,8 +117,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sketch_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_feature = self.sketch_attention(sketch_feature)
+            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
+            sketch_feature = self.attention(sketch_feature)
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
