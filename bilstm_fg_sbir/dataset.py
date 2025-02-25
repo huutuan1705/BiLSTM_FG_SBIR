@@ -74,8 +74,8 @@ class FGSBIR_Dataset(Dataset):
                 else:
                     sketch_imgs = [F.hflip(sk_img) for sk_img in sketch_imgs]
 
-                positive_img = F.hflip(positive_img)
-                negetive_img = F.hflip(negetive_img)
+                positive_image = F.hflip(positive_image)
+                negative_image = F.hflip(negative_image)
             
             positive_image = self.train_transform(positive_image)
             negative_image = self.train_transform(negative_image)
@@ -87,7 +87,7 @@ class FGSBIR_Dataset(Dataset):
                 
             sample = {
                 'sketch_imgs': sketch_imgs, 'sketch_path': sketch_path,
-                'positive_img': positive_image, 'positive_path': positive_path,
+                'positive_image': positive_image, 'positive_path': positive_path,
                 'negative_img': negative_image, 'negative_path': negative_sample 
             }
         
@@ -107,7 +107,7 @@ class FGSBIR_Dataset(Dataset):
                 
             sample = {
                 'sketch_imgs': sketch_imgs, 'sketch_path': sketch_path,
-                'positive_img': positive_image, 'positive_path': positive_path, "positive_sample": positive_sample
+                'positive_image': positive_image, 'positive_path': positive_path, "positive_sample": positive_sample
             }
             
         return sample
