@@ -28,11 +28,10 @@ class BiLSTM(nn.Module):
         self.attention = nn.Linear(hidden_dim2 * 2, output_dim)
 
     def forward(self, x):
-        # print("x.shape: ", x.shape)
         x, _ = self.bilstm1(x)  
         x, _ = self.bilstm2(x)  
         
-        x = x[-1, :].unsqueeze(0)
+        # x = x[:, -1, :]
         
-        x = F.normalize(x) # (1, 64)      
-        return x
+        # x = F.normalize(x)     
+        return x # (N, 64)

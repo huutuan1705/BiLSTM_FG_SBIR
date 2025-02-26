@@ -49,11 +49,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer.zero_grad()
         
         loss = 0
-        # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs'])) #25
+        # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs'])) #
         for idx in range(len(batch['sketch_imgs'])):
             sketch_seq_feature = self.bilstm_network(self.attention(
                 self.sample_embedding_network(batch['sketch_imgs'][idx].to(device))))
-            # print(f'sketch_seq_feature: {sketch_seq_feature.shape}') # (1, 64)
+            # print(f'sketch_seq_feature: {sketch_seq_feature.shape}') # (25, 64)
             positive_feature = self.linear(self.attention(
                 self.sample_embedding_network(batch['positive_img'][idx].unsqueeze(0).to(device))))
             # print(f'positive_feature: {positive_feature.shape}') # (1, 64)
@@ -63,7 +63,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             positive_feature = positive_feature.repeat(sketch_seq_feature.shape[0], 1)
             negative_feature = negative_feature.repeat(sketch_seq_feature.shape[0], 1)
             
-            loss += self.loss(sketch_seq_feature, positive_feature, negative_feature) 
+            loss += self.loss(F.normalize(sketch_seq_feature), positive_feature, negative_feature) 
 
         loss.backward()
         self.optimizer.step()
@@ -81,29 +81,29 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_feature_ALL = torch.FloatTensor().to(device)
             
             for data_sketch in sampled_batch['sketch_imgs']: 
+                print("data_sketch shape: ", data_sketch.shape) 
                 sketch_feature = self.attention(self.sample_embedding_network(data_sketch.to(device)))
                 sketch_feature_ALL = torch.cat((sketch_feature_ALL, sketch_feature.detach()))
             
+            print("sketch_feature_ALL shape: ", sketch_feature_ALL.shape)
             sketch_names.extend(sampled_batch['sketch_path'])
             sketch_array_tests.append(sketch_feature_ALL.cpu())
             
-            # print("sampled_batch['positive_path']: ", sampled_batch['positive_path'])
             if sampled_batch['positive_sample'][0] not in image_names:
                 rgb_feature = self.linear(self.attention(
                     self.sample_embedding_network(sampled_batch['positive_img'].to(device))))
                 image_array_tests = torch.cat((image_array_tests, rgb_feature.detach()))
                 image_names.extend(sampled_batch['positive_sample'])
-        # print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0])
-
+        print("sketch_steps: ", sketch_steps)
         avererage_area = []
         avererage_area_percentile = []
         
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        print("sketch_array_tests shape: ", len(sketch_array_tests)) # 232
+        # print("sketch_array_tests shape: ", len(sketch_array_tests)) # 232
         for i_batch, sampled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []
