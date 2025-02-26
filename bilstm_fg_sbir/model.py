@@ -121,8 +121,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 # print("Sketch feature shape: ", sketch_feature.shape) # (1, 64)
                 # print("image_array_tests[position_query]: ", image_array_tests[position_query].shape) #(64, )
                 # print("image_array_tests shape: ", image_array_tests.shape) # (100, 64)
-                target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
+                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 # print(f'distance: {len(distance)}')
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
