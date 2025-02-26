@@ -96,7 +96,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 image_names.extend(sampled_batch['positive_sample'])
         
         sketch_steps = len(sketch_array_tests[0])
-        print("sketch_steps: ", sketch_steps)
+        # print("sketch_steps: ", sketch_steps)
         avererage_area = []
         avererage_area_percentile = []
         
@@ -121,8 +121,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 # print("Sketch feature shape: ", sketch_feature.shape) # (1, 64)
                 # print("image_array_tests[position_query]: ", image_array_tests[position_query].shape) #(64, )
                 # print("image_array_tests shape: ", image_array_tests.shape) # (100, 64)
-                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
+                target_distance = F.pairwise_distance(F.normalize(sketch_feature[-1].unsqueeze(0).to(device)), 
+                                                      image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(F.normalize(sketch_feature[-1].unsqueeze(0).to(device)), 
+                                               image_array_tests.to(device))
                 # print(f'distance: {len(distance)}')
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
