@@ -59,7 +59,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             # print(f'positive_feature: {positive_feature.shape}') # (1, 64)
             negative_feature = self.linear(self.attention(
                 self.sample_embedding_network(batch['negative_img'][idx].unsqueeze(0).to(device))))
-            # print(f'negative_feature: {negative_feature.shape}')
+            # print(f'negative_feature: {negative_feature.shape}') # (1, 64)
             positive_feature = positive_feature.repeat(sketch_seq_feature.shape[0], 1)
             negative_feature = negative_feature.repeat(sketch_seq_feature.shape[0], 1)
             
@@ -124,7 +124,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 # print("image_array_tests shape: ", image_array_tests.shape) # (100, 64)
                 target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
-                print(f'distance: {len(distance)}')
+                # print(f'distance: {len(distance)}')
                 
                 rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
                 rank_all_percentile[i_batch, i_sketch] = (len(distance[0]) - rank_all[i_batch, i_sketch]) / (len(distance[0]) - 1)
