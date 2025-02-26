@@ -83,7 +83,7 @@ class FGSBIR_Dataset(Dataset):
             if self.on_fly == False:
                 sketch_imgs = self.train_transform(sketch_imgs)
             else:
-                sketch_imgs = torch.stack([self.train_transform(sk_img) for sk_img in sketch_imgs])
+                sketch_imgs = [self.train_transform(sk_img) for sk_img in sketch_imgs]
                 
             sample = {
                 'sketch_imgs': sketch_imgs, 'sketch_path': sketch_path,
