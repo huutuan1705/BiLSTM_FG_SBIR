@@ -81,11 +81,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_feature_ALL = torch.FloatTensor().to(device)
             
             for data_sketch in sampled_batch['sketch_imgs']: 
-                print("data_sketch shape: ", data_sketch.shape) 
+                # print("data_sketch shape: ", data_sketch.shape) # (1, 3, 299, 299)
                 sketch_feature = self.attention(self.sample_embedding_network(data_sketch.to(device)))
                 sketch_feature_ALL = torch.cat((sketch_feature_ALL, sketch_feature.detach()))
             
-            print("sketch_feature_ALL shape: ", sketch_feature_ALL.shape)
+            # print("sketch_feature_ALL shape: ", sketch_feature_ALL.shape) # (25, 2048)
             sketch_names.extend(sampled_batch['sketch_path'])
             sketch_array_tests.append(sketch_feature_ALL.cpu())
             
@@ -109,7 +109,6 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             mean_rank_percentile = []
             sketch_name = sketch_names[i_batch]
             # print(f'sketch_name: {sketch_name}')
-            
             
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
