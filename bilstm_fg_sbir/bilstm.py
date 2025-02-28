@@ -20,11 +20,15 @@ class BiLSTM(nn.Module):
         self.bilstm = nn.LSTM(input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
                             batch_first=True, bidirectional=bidirectional)
         self.attention = SelfAttention()
+        
+        self.bilstm.to(device=device)
+        self.attention.to(device=device)
+        
     def forward(self, x):
         for _ in range(self.num_bilstm_blocks):
-            x, _ = self.bilstm(x).to(device)
+            x, _ = self.bilstm(x)
             
-        x = self.attention(x).to(device)     
+        x = self.attention(x)    
         return x # (N, 25, 64)
     
 # class BiLSTM(nn.Module):
