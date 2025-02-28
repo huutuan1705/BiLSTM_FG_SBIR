@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from attention import SelfAttention
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class BiLSTM(nn.Module):
     def __init__(self, args, input_size=2048, bidirectional=True):
         super(BiLSTM, self).__init__()
@@ -20,9 +22,9 @@ class BiLSTM(nn.Module):
         self.attention = SelfAttention()
     def forward(self, x):
         for _ in range(self.num_bilstm_blocks):
-            x, _ = self.bilstm(x)
+            x, _ = self.bilstm(x).to(device)
             
-        x = self.attention(x)     
+        x = self.attention(x).to(device)     
         return x # (N, 25, 64)
     
 # class BiLSTM(nn.Module):
