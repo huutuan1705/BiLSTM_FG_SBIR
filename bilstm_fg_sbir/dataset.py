@@ -83,7 +83,7 @@ class FGSBIR_Dataset(Dataset):
             if self.on_fly == False:
                 sketch_imgs = self.train_transform(sketch_imgs)
             else:
-                sketch_imgs = [self.train_transform(sk_img) for sk_img in sketch_imgs]
+                sketch_imgs = torch.stack([self.train_transform(sk_img) for sk_img in sketch_imgs])
                 
             sample = {
                 'sketch_imgs': sketch_imgs, 'sketch_path': sketch_path,
@@ -100,7 +100,7 @@ class FGSBIR_Dataset(Dataset):
             vector_x = self.coordinate[sketch_path]
             list_sketch_imgs = rasterize_sketch(vector_x, self.args.num_anchors)
             if self.on_fly:
-                sketch_imgs = sketch_imgs = [self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs]
+                sketch_imgs = sketch_imgs = torch.stack([self.train_transform(Image.fromarray(sk_img).convert("RGB")) for sk_img in list_sketch_imgs])
 
             else:
                 sketch_imgs = self.test_transform(Image.fromarray(list_sketch_imgs[-1]).convert("RGB"))

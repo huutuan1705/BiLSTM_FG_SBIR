@@ -51,10 +51,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
         
-        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1)
-        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1)
+        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1) # (N, 1, 64)
+        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1) # (N, 1, 64)
         
-        sketch_imgs_tensor = torch.stack(batch['sketch_imgs'], dim=1) # (N, 25 3, 299, 299)
+        sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
         sketch_features = []
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
@@ -62,15 +62,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features.append(sketch_feature)
             
         sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features).unsqueeze(1) # (N, 2048)
-        
-        # sketch_features = self.bilstm_network(sketch_features)# (N, 2048)
-        # sketch_features = self.sketch_linear(sketch_features).unsqueeze(1)
-        
-        # print("Sketch feature shape: ", sketch_features.shape) # (N, 1, 64)
-        # print("Positive feature shape: ", positive_feature.shape) # (N, 1, 64)
-        # print("Negative feature shape: ", negative_feature.shape) # (N, 1, 64)
-        
+        sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
+       
         loss = self.loss(sketch_features, positive_feature, negative_feature)
         loss.backward()
         self.optimizer.step()
@@ -110,12 +103,13 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                     image_names.append(batch['positive_sample'][i_num])
                     image_array_tests.append(positive_feature[i_num])
                 
-        sketch_array_tests = torch.stack(sketch_array_tests)
+        sketch_array_tests = torch.stack(sketch_array_tests) # (323, 25, 2048)
         image_array_tests = torch.stack(image_array_tests)
         
-        # print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
+        print("sketch_array_tests shape 2: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0])
+        print("sketch_steps: ", sketch_steps)
 
         avererage_area = []
         avererage_area_percentile = []
@@ -123,7 +117,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests), sketch_steps)
         rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps)
         
-        # print("rank_all_percentile shape: ", rank_all_percentile.shape)
+        print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):
             mean_rank = []
             mean_rank_percentile = []

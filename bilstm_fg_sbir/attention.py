@@ -28,37 +28,19 @@ class Attention_global(nn.Module):
         fatt1 = self.pool_method(fatt1).view(-1, 2048)
         return  F.normalize(fatt1)
 
-class AttentionSequence(nn.Module):
+class SelfAttention(nn.Module):
     def __init__(self):
-        super(AttentionSequence, self).__init__()
-        self.attention_net = nn.Sequential(
-            nn.Linear(2048, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(),
-            nn.Linear(512, 1)
-        )
-        self.output_layer = nn.Linear(2048, 64)  # Biến đổi đầu ra cuối cùng về (N, 25, 64)
+        super(SelfAttention, self).__init__()
+        self.norm = nn.LayerNorm(2048)
+        self.mha = nn.MultiheadAttention(2048, num_heads=4, batch_first=True)
+        self.linear = nn.Linear(2048, 64)
     
     def forward(self, x):
-        batch_size = x.size(0)
-        x_reshaped = x.view(-1, x.size(-1))
-        attention_weights = self.attention_net(x_reshaped)
-        attention_weights = attention_weights.view(batch_size, -1)
-        attention_weights = nn.Softmax(dim=1)(attention_weights)
-        attention_weights = attention_weights.unsqueeze(-1)
-        weighted = x * attention_weights
-        enhanced = x + weighted
+        x = self.norm(x)  
+        att_out, _ = self.mha(x, x, x)  # (bs, 25, 2048)
+        att_out = self.linear(att_out)  # (bs, 25, 64)
         
-        enhanced_flat = enhanced.view(-1, enhanced.size(-1))
-        
-        projected = self.output_layer(enhanced_flat)
-        # print("projected shape: ", projected.shape)
-        output = projected.view(batch_size, 25, 64)
-        
-        # Normalize output
-        output = F.normalize(projected, dim=-1)
-        
-        return output
+        return F.normalize(att_out)  
     
 class Linear_global(nn.Module):
     def __init__(self, feature_num):
@@ -76,7 +58,7 @@ class Linear_global(nn.Module):
 # model = Attention_global()
 # output = model(input_tensor)
 
-x = torch.randn(1, 25, 2048)  
-model = AttentionSequence()
-output = model(x)
-print(output.shape)
+# x = torch.randn(1, 25, 2048)  
+# model = SelfAttention()
+# output = model(x)
+# print(output.shape)
