@@ -21,9 +21,6 @@ class BiLSTM(nn.Module):
                             batch_first=True, bidirectional=bidirectional)
         self.attention = SelfAttention()
         
-        self.bilstm.to(device=device)
-        self.attention.to(device=device)
-        
     def forward(self, x):
         for _ in range(self.num_bilstm_blocks):
             x, _ = self.bilstm(x)
