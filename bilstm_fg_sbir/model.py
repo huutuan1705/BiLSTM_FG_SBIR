@@ -136,11 +136,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             rank_all[i_batch] = distance[0].le(target_distance[0]).sum()
             rank_all_percentile[i_batch] = (len(distance[0]) - rank_all[i_batch]) / (len(distance[0]) - 1)
             
-            # print("rank_all[i_batch]: ", rank_all[i_batch])
-            # print("rank_all_percentile[i_batch]: ", rank_all_percentile[i_batch])
+            print("rank_all[i_batch]: ", rank_all[i_batch])
+            print("rank_all_percentile[i_batch]: ", rank_all_percentile[i_batch])
             
-            # print("rank_all[i_batch]: ", rank_all[i_batch])
-            # print("rank_all[i_batch].item(): ", rank_all[i_batch].item())
             avererage_area.append(1/rank_all[i_batch].item() if rank_all[i_batch].item()!=0 else 1)
             avererage_area_percentile.append(rank_all_percentile[i_batch].item() if rank_all_percentile[i_batch].item()!=0 else 1)
         
