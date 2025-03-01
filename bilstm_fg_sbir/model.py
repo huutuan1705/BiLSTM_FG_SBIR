@@ -142,7 +142,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         # print("len(rank_all): ", len(rank_all)) # 323
         # print("len(rank_all[0]): ", len(rank_all[0])) # 25
-        rank_all, _ = torch.min(rank_all, dim=1)
+        # rank_all, _ = torch.min(rank_all, dim=1)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
         top5_accuracy = rank_all.le(5).sum().numpy() / rank_all.shape[0]
         top10_accuracy = rank_all.le(10).sum().numpy() / rank_all.shape[0]
