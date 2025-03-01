@@ -108,7 +108,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         # print("sketch_array_tests shape: ", sketch_array_tests.shape)
         
-        sketch_steps = len(sketch_array_tests[0]) # 1
+        # sketch_steps = len(sketch_array_tests[0]) # 1
         # print("sketch_steps: ", sketch_steps)
 
         avererage_area = []
@@ -134,22 +134,22 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             # print("target_distance[0]: ", target_distance[0])
             # print("distance[0]: ", distance[0])
             
-            print("target_distance: ", target_distance)
-            print("distance: ", distance)
+            # print("target_distance: ", target_distance)
+            # print("distance: ", distance)
             
             rank_all[i_batch] = distance[0].le(target_distance[0]).sum()
             rank_all_percentile[i_batch] = (len(distance[0]) - rank_all[i_batch]) / (len(distance[0]) - 1)
             
-            print("rank_all[i_batch]: ", rank_all[i_batch])
+            # print("rank_all[i_batch]: ", rank_all[i_batch])
             # print("rank_all_percentile[i_batch]: ", rank_all_percentile[i_batch])
             
             avererage_area.append(1/rank_all[i_batch].item() if rank_all[i_batch].item()!=0 else 1)
             avererage_area_percentile.append(rank_all_percentile[i_batch].item() if rank_all_percentile[i_batch].item()!=0 else 1)
             
-            t += 1
-            if t == 4:
-                break
-        print("rank_all: ", rank_all) # 323
+            # t += 1
+            # if t == 4:
+            #     break
+        # print("rank_all: ", rank_all) # 323
         # print("len(rank_all[0]): ", len(rank_all[0])) # 25
         # rank_all, _ = torch.min(rank_all, dim=1)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
