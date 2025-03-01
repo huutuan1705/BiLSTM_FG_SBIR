@@ -38,9 +38,8 @@ class SelfAttention(nn.Module):
     def forward(self, x):
         x = self.norm(x)  
         att_out, _ = self.mha(x, x, x)  # (bs, 25, 2048)
-        att_out = self.linear(att_out)  # (bs, 25, 64)
-        
-        return F.normalize(att_out)  
+        att_out = F.normalize(att_out)
+        return F.normalize(self.linear(att_out))  # (bs, 25, 64)
     
 class Linear_global(nn.Module):
     def __init__(self, feature_num):
