@@ -144,7 +144,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             avererage_area.append(1/rank_all[i_batch].item() if rank_all[i_batch].item()!=0 else 1)
             avererage_area_percentile.append(rank_all_percentile[i_batch].item() if rank_all_percentile[i_batch].item()!=0 else 1)
         
-        # print("len(rank_all): ", len(rank_all)) # 323
+        print("rank_all: ", rank_all) # 323
         # print("len(rank_all[0]): ", len(rank_all[0])) # 25
         # rank_all, _ = torch.min(rank_all, dim=1)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
