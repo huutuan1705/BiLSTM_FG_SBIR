@@ -119,15 +119,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         # print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sanpled_batch in enumerate(sketch_array_tests):
-            mean_rank = []
-            mean_rank_percentile = []
             sketch_name = sketch_names[i_batch][0]
-            # print(f'sketch_name: {sketch_name}')
             
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            # print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
             sketch_features = self.bilstm_network(sanpled_batch.to(device)) # (N, 25, 64)
             
             sketch_feature = sketch_features[:, -1, :] # (N, 64)
