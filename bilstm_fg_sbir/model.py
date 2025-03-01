@@ -128,27 +128,21 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             position_query = image_names.index(sketch_query_name)
             
             # print("sanpled_batch shape: ", sanpled_batch.shape) # (1, 25, 2048)
-            sketch_features = self.bilstm_network(sanpled_batch.to(device)).squeeze(0) # (25, 64)
-            for i_sketch in range(sketch_features.shape[0]):
-                sketch_feature = sketch_features[i_sketch] # (64,)
-                target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
-                
-                rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
-                rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
-                
-                if rank_all[i_batch, i_sketch].item() == 0:
-                    mean_rank.append(1.)
-                else:
-                    mean_rank.append(1/rank_all[i_batch, i_sketch].item())
-                    mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
+            sketch_features = self.bilstm_network(sanpled_batch.to(device)) # (N, 25, 64)
             
-            avererage_area.append(np.sum(mean_rank)/len(mean_rank))
-            avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
+            sketch_feature = sketch_features[:, -1, :] # (N, 64)
+            target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+            distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
+            
+            rank_all[i_batch] = distance.le(target_distance).sum()
+            rank_all_percentile[i_batch] = (len(distance) - rank_all[i_batch]) / (len(distance) - 1)
+            
+            avererage_area.append(rank_all[i_batch] if rank_all[i_batch].item()!=0 else 1)
+            avererage_area_percentile.append(rank_all_percentile[i_batch] if rank_all_percentile[i_batch].item()!=0 else 1)
         
         # print("len(rank_all): ", len(rank_all)) # 323
         # print("len(rank_all[0]): ", len(rank_all[0])) # 25
-        rank_all, _ = torch.min(rank_all, dim=1)
+        # rank_all, _ = torch.min(rank_all, dim=1)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
         top5_accuracy = rank_all.le(5).sum().numpy() / rank_all.shape[0]
         top10_accuracy = rank_all.le(10).sum().numpy() / rank_all.shape[0]
