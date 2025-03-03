@@ -52,7 +52,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         loss = 0
         for idx in range(len(sketch_imgs_tensor)):
             sketch_seq_feature = self.bilstm_network(self.attention(
-                self.sample_embedding_network(sketch_imgs_tensor[idx].to(device)))) 
+                self.sample_embedding_network(sketch_imgs_tensor[idx].to(device)))).unsqueeze(0)
             positive_feature = self.linear(self.attention(
                 self.sample_embedding_network(batch['positive_img'][idx].unsqueeze(0).to(device))))
             negative_feature = self.linear(self.attention(
