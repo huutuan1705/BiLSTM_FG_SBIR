@@ -128,10 +128,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         rank_all = torch.zeros(len(sketch_array_tests)) # (323, 1)
         rank_all_percentile = torch.zeros(len(sketch_array_tests)) # (323, 1)
         
-        # print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sample_batched in enumerate(sketch_array_tests):
-            mean_rank = []
-            mean_rank_percentile = []
             sketch_name = sketch_names[i_batch][0]
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
@@ -144,7 +141,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             rank_all_percentile[i_batch] = (len(distance) - rank_all[i_batch]) / (len(distance) - 1)
             
             print("rank_all[i_batch]: ", rank_all[i_batch])
-            print("rank_all_percentile[i_batch]: ", rank_all_percentile[i_batch])
+            print("len(distance) ", len(distance))
+            
             avererage_area.append(1/rank_all[i_batch].item() if rank_all[i_batch].item()!=0 else 1)
             avererage_area_percentile.append(rank_all_percentile[i_batch].item() if rank_all_percentile[i_batch].item()!=0 else 1)
         
@@ -153,7 +151,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         top5_accuracy = rank_all.le(5).sum().numpy() / rank_all.shape[0]
         top10_accuracy = rank_all.le(10).sum().numpy() / rank_all.shape[0]
         
-        print("avererage_area_percentile: ", avererage_area_percentile)
+        # print("avererage_area_percentile: ", avererage_area_percentile)
         meanMB = np.mean(avererage_area)
         meanMA = np.mean(avererage_area_percentile)
         
