@@ -47,6 +47,6 @@ class BiLSTM(nn.Module):
 #         return x 
     
 # model = BiLSTM(None)
-# x = torch.randn(25, 2048)
+# x = torch.randn(1, 25, 2048)
 # x = model(x)
 # print(x.shape)

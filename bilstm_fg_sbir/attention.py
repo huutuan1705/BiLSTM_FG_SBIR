@@ -60,7 +60,7 @@ class Linear_global(nn.Module):
 # model = Attention_global()
 # output = model(input_tensor)
 
-x = torch.randn(48, 25, 2048)  
-model = SelfAttention()
-output = model(x)
-print(output.shape)
+# x = torch.randn(48, 25, 2048)  
+# model = SelfAttention()
+# output = model(x)
+# print(output.shape)
