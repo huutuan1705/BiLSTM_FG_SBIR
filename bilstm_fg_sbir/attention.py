@@ -33,13 +33,16 @@ class SelfAttention(nn.Module):
         super(SelfAttention, self).__init__()
         self.norm = nn.LayerNorm(2048)
         self.mha = nn.MultiheadAttention(2048, num_heads=4, batch_first=True)
+        self.pool1d = nn.AdaptiveMaxPool1d(1)
         self.linear = nn.Linear(2048, 64)
     
     def forward(self, x):
         x = self.norm(x)  
         att_out, _ = self.mha(x, x, x)  # (bs, 25, 2048)
+        att_out = att_out.permute(0, 2, 1)
+        att_out = self.pool1d(att_out).view(-1, 2048)
         att_out = F.normalize(att_out)
-        return F.normalize(self.linear(att_out))  # (bs, 25, 64)
+        return att_out
     
 class Linear_global(nn.Module):
     def __init__(self, feature_num):
@@ -57,7 +60,7 @@ class Linear_global(nn.Module):
 # model = Attention_global()
 # output = model(input_tensor)
 
-# x = torch.randn(1, 25, 2048)  
-# model = SelfAttention()
-# output = model(x)
-# print(output.shape)
+x = torch.randn(48, 25, 2048)  
+model = SelfAttention()
+output = model(x)
+print(output.shape)

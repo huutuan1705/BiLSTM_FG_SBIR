@@ -1,0 +1,3 @@
+- Đặc trưng ảnh phác thảo ko hoàn thiện có shape là (N, 25, 2048) với 25 là số phác thảo ko hoàn thiện. Khi đi qua module bilstm sẽ thu được shape là (N, 25, 64). Vậy khi đưa vào triplet loss thì đưa toàn bộ 25 đặc trưng ko hoàn thiện này vào hay chỉ đưa cái cuối cùng vào ạ
+- Nếu trong quá trình train là lấy toàn bộ 25 đặc trưng ảnh phác thảo từ bilstm, vậy khi thực hiện evaluate thì cũng lấy 25 đặc trưng này để thực hiện kiểm nghiệm hay chỉ lấy cái cuối cùng ạ. 
+- Em hiện tại chưa rõ ràng công dụng của module bilstm. Theo em đang hiểu thì bilstm làm nhiệm vụ dự đoán đặc trưng tiếp theo sẽ được vẽ. Tuy nhiên nếu như thế thì đáng lẽ đầu ra nên chỉ là (N, 1, 64), tuy nhiên em thấy trong model của họ đầu ra là toàn bộ 25 đặc trưng phác thảo 

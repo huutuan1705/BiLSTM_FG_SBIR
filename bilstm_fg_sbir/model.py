@@ -49,7 +49,6 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer.zero_grad()
         
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
-        print("sketch_imgs_tensor: ", sketch_imgs_tensor.shape)
         loss = 0
         # for idx in range(len(sketch_imgs_tensor)):
         #     sketch_seq_feature = self.bilstm_network(self.attention(
@@ -75,11 +74,11 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         for i in range(sketch_imgs_tensor.shape[0]):
             sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
             sketch_feature = self.attention(sketch_feature)
-            sketch_feature = self.bilstm_network(sketch_feature) # (64)
             sketch_features.append(sketch_feature)
             
-        sketch_features = torch.stack(sketch_features) # (N, 64)
-        loss = self.loss(sketch_features, positive_feature, negative_feature)
+        sketch_features = torch.stack(sketch_features) # (N, 25, 2048)
+        sketch_feature = self.bilstm_network(sketch_features) # (N, 64)
+        loss = self.loss(sketch_feature, positive_feature, negative_feature)
         
         loss.backward()
         self.optimizer.step()
@@ -87,14 +86,14 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         return loss.item() 
     
     def test_forward(self, batch):            #  this is being called only during evaluation
-        sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
-        print("sketch_imgs_tensor: ", sketch_imgs_tensor.shape)
+        # sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
+        # print("sketch_imgs_tensor: ", sketch_imgs_tensor.shape)
         
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         positive_feature = self.linear(self.attention(positive_feature))
         
         sketch_feature = self.attention(
-            self.sample_embedding_network(batch['sketch_imgs'].squeeze(0).to(device)))
+            self.sample_embedding_network(batch['sketch_imgs'].squeeze(0).to(device))) # (25, 2048)
         
         return sketch_feature.cpu(), positive_feature.cpu()
     
@@ -118,7 +117,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         sketch_array_tests = torch.stack(sketch_array_tests) # (323, 1, 25, 2048)
         image_array_tests = torch.stack(image_array_tests)
         
-        # print("sketch_array_tests shape: ", sketch_array_tests.shape)
+        print("sketch_array_tests shape: ", sketch_array_tests.shape)
         
         sketch_steps = len(sketch_array_tests[0]) # 1
         # print("sketch_steps: ", sketch_steps)

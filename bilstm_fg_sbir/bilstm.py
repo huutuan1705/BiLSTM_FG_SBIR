@@ -1,7 +1,7 @@
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
-from attention import SelfAttention
+from attention import SelfAttention, Linear_global
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -20,15 +20,15 @@ class BiLSTM(nn.Module):
         self.bilstm = nn.LSTM(input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
                             batch_first=True, bidirectional=bidirectional)
         self.attention = SelfAttention()
-        self.linear = nn.Linear(in_features=2048, out_features=64)
+        self.linear = Linear_global(feature_num=64)
         
     def forward(self, x):
         for _ in range(self.num_bilstm_blocks):
             x, _ = self.bilstm(x)
             
-        # x = self.attention(x)
-        x = F.normalize(self.linear(x))    
-        return x[-1, :] # (N, 64)
+        x = self.attention(x)
+        x = self.linear(x)   
+        return x # (N, 64)
     
 # class BiLSTM(nn.Module):
 #     def __init__(self, args, input_size=2048, hidden_dim1=512, hidden_dim2=32, output_dim=64):
