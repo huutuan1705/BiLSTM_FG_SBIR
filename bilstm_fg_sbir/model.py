@@ -48,23 +48,38 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.train()
         self.optimizer.zero_grad()
         
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
-        negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
-        
-        positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1) # (N, 1, 64)
-        negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1) # (N, 1, 64)
-        
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
-        sketch_features = []
-        for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_feature = self.attention(sketch_feature)
-            sketch_features.append(sketch_feature)
+        loss = 0
+        for idx in range(len(sketch_imgs_tensor)):
+            sketch_seq_feature = self.bilstm_network(self.attention(
+                self.sample_embedding_network(sketch_imgs_tensor[idx].to(device)))) 
+            positive_feature = self.linear(self.attention(
+                self.sample_embedding_network(batch['positive_img'][idx].to(device))))
+            negative_feature = self.linear(self.attention(
+                self.sample_embedding_network(batch['negative_img'][idx].to(device))))
             
-        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
-        sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
-       
-        loss = self.loss(sketch_features, positive_feature, negative_feature)
+            positive_feature = positive_feature.repeat(sketch_seq_feature.shape[0], 1)
+            negative_feature = negative_feature.repeat(sketch_seq_feature.shape[0], 1)
+            
+            loss += self.loss(sketch_seq_feature, positive_feature, negative_feature)
+        
+        
+        # positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
+        # negative_feature = self.sample_embedding_network(batch['negative_img'].to(device))
+        
+        # positive_feature = self.linear(self.attention(positive_feature)).unsqueeze(1) # (N, 1, 64)
+        # negative_feature = self.linear(self.attention(negative_feature)).unsqueeze(1) # (N, 1, 64)
+          
+        # sketch_features = []
+        # for i in range(sketch_imgs_tensor.shape[0]):
+        #     sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
+        #     sketch_feature = self.attention(sketch_feature)
+        #     sketch_features.append(sketch_feature)
+            
+        # sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
+        # sketch_features = self.bilstm_network(sketch_features) # (N, 25, 64)
+        # loss = self.loss(sketch_features, positive_feature, negative_feature)
+        
         loss.backward()
         self.optimizer.step()
 
@@ -74,17 +89,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
         positive_feature = self.linear(self.attention(positive_feature))
         
-        # print("positive_feature shape: ", positive_feature.shape)
-        sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
-        sketch_features = []
-        for i in range(sketch_imgs_tensor.shape[0]):
-            sketch_feature = self.sample_embedding_network(sketch_imgs_tensor[i].to(device))
-            sketch_feature = self.attention(sketch_feature)
-            sketch_features.append(sketch_feature)
-            
-        sketch_features = torch.stack(sketch_features, dim=0) # (N, 25, 2048)
+        sketch_feature = self.attention(
+            self.sample_embedding_network(batch['sketch_seq'].squeeze(0).to(device)))
         
-        return sketch_features.cpu(), positive_feature.cpu()
+        return sketch_feature.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
         self.eval()
@@ -119,39 +127,30 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         t = 0
         # print("rank_all_percentile shape: ", rank_all_percentile.shape)
-        for i_batch, sanpled_batch in enumerate(sketch_array_tests):
+        for i_batch, sample_batched in enumerate(sketch_array_tests):
+            mean_rank = []
+            mean_rank_percentile = []
             sketch_name = sketch_names[i_batch][0]
-            
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            sketch_features = self.bilstm_network(sanpled_batch.to(device)) # (N, 25, 64)
+            for i_sketch in range(sample_batched.shape[0]):
+                sketch_feature = self.bilstm_network(sample_batched[:i_sketch+1].to(device))
+                target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+                distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
+                
+                rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
+                rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
+                
+                if rank_all[i_batch, i_sketch].item() == 0:
+                    mean_rank.append(1.)
+                else:
+                    mean_rank.append(1/rank_all[i_batch, i_sketch].item())
+                    mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
             
-            sketch_feature = sketch_features[:, -1, :] # (N, 64)
-            target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-            distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
+            avererage_area.append(np.sum(mean_rank)/len(mean_rank))
+            avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
             
-            # print("target_distance[0]: ", target_distance[0])
-            # print("distance[0]: ", distance[0])
-            
-            # print("target_distance: ", target_distance)
-            # print("distance: ", distance)
-            
-            rank_all[i_batch] = distance[0].le(target_distance[0]).sum()
-            rank_all_percentile[i_batch] = (len(distance[0]) - rank_all[i_batch]) / (len(distance[0]) - 1)
-            
-            # print("rank_all[i_batch]: ", rank_all[i_batch])
-            # print("rank_all_percentile[i_batch]: ", rank_all_percentile[i_batch])
-            
-            avererage_area.append(1/rank_all[i_batch].item() if rank_all[i_batch].item()!=0 else 1)
-            avererage_area_percentile.append(rank_all_percentile[i_batch].item() if rank_all_percentile[i_batch].item()!=0 else 1)
-            
-            # t += 1
-            # if t == 4:
-            #     break
-        # print("rank_all: ", rank_all) # 323
-        # print("len(rank_all[0]): ", len(rank_all[0])) # 25
-        # rank_all, _ = torch.min(rank_all, dim=1)
         top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
         top5_accuracy = rank_all.le(5).sum().numpy() / rank_all.shape[0]
         top10_accuracy = rank_all.le(10).sum().numpy() / rank_all.shape[0]

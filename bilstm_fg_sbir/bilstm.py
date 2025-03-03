@@ -28,7 +28,7 @@ class BiLSTM(nn.Module):
             
         # x = self.attention(x)
         x = F.normalize(self.linear(x))    
-        return x # (N, 25, 64)
+        return x[:, -1, :] # (N, 64)
     
 # class BiLSTM(nn.Module):
 #     def __init__(self, args, input_size=2048, hidden_dim1=512, hidden_dim2=32, output_dim=64):
