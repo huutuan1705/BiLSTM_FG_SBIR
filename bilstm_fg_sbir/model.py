@@ -49,6 +49,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer.zero_grad()
         
         sketch_imgs_tensor = batch['sketch_imgs'] # (N, 25 3, 299, 299)
+        print("sketch_imgs_tensor: ", sketch_imgs_tensor.shape)
         loss = 0
         # for idx in range(len(sketch_imgs_tensor)):
         #     sketch_seq_feature = self.bilstm_network(self.attention(
