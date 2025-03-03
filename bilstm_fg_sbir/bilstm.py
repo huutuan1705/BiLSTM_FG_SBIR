@@ -28,7 +28,7 @@ class BiLSTM(nn.Module):
             
         # x = self.attention(x)
         x = F.normalize(self.linear(x))    
-        return x[:, -1, :] # (N, 64)
+        return x[-1, :] # (N, 64)
     
 # class BiLSTM(nn.Module):
 #     def __init__(self, args, input_size=2048, hidden_dim1=512, hidden_dim2=32, output_dim=64):
@@ -47,6 +47,6 @@ class BiLSTM(nn.Module):
 #         return x 
     
 # model = BiLSTM(None)
-# x = torch.randn(48, 25, 2048)
+# x = torch.randn(25, 2048)
 # x = model(x)
 # print(x.shape)
