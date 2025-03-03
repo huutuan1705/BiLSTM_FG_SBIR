@@ -125,8 +125,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         avererage_area = []
         avererage_area_percentile = []
         
-        rank_all = torch.zeros(len(sketch_array_tests), sketch_steps) # (323, 1)
-        rank_all_percentile = torch.zeros(len(sketch_array_tests), sketch_steps) # (323, 1)
+        rank_all = torch.zeros(len(sketch_array_tests)) # (323, 1)
+        rank_all_percentile = torch.zeros(len(sketch_array_tests)) # (323, 1)
         
         # print("rank_all_percentile shape: ", rank_all_percentile.shape)
         for i_batch, sample_batched in enumerate(sketch_array_tests):
@@ -136,28 +136,26 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             
-            sample_batched = sample_batched.unsqueeze(0) # (1, 25, 2048)
-            for i_sketch in range(sample_batched.shape[0]):
-                sketch_feature = self.bilstm_network(sample_batched[i_sketch].unsqueeze(0).to(device))
-                target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
-                distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
-                
-                rank_all[i_batch, i_sketch] = distance.le(target_distance).sum()
-                rank_all_percentile[i_batch, i_sketch] = (len(distance) - rank_all[i_batch, i_sketch]) / (len(distance) - 1)
-                
-                if rank_all[i_batch, i_sketch].item() == 0:
-                    mean_rank.append(1.)
-                else:
-                    mean_rank.append(1/rank_all[i_batch, i_sketch].item())
-                    mean_rank_percentile.append(rank_all_percentile[i_batch, i_sketch].item())
+            sketch_feature = self.bilstm_network(sample_batched.unsqueeze(0).to(device))
+            target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
+            distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
+            
+            rank_all[i_batch] = distance.le(target_distance).sum()
+            rank_all_percentile[i_batch] = (len(distance) - rank_all[i_batch]) / (len(distance) - 1)
+            
+            if rank_all[i_batch].item() == 0:
+                mean_rank.append(1.)
+            else:
+                mean_rank.append(1/rank_all[i_batch].item())
+                mean_rank_percentile.append(rank_all_percentile[i_batch].item())
             
             avererage_area.append(np.sum(mean_rank)/len(mean_rank))
             avererage_area_percentile.append(np.sum(mean_rank_percentile)/len(mean_rank_percentile))
         
         # print("rank_all: ", rank_all)    
-        top1_accuracy = rank_all[:, -1].le(1).sum().numpy() / rank_all.shape[0]
-        top5_accuracy = rank_all[:, -1].le(5).sum().numpy() / rank_all.shape[0]
-        top10_accuracy = rank_all[:, -1].le(10).sum().numpy() / rank_all.shape[0]
+        top1_accuracy = rank_all.le(1).sum().numpy() / rank_all.shape[0]
+        top5_accuracy = rank_all.le(5).sum().numpy() / rank_all.shape[0]
+        top10_accuracy = rank_all.le(10).sum().numpy() / rank_all.shape[0]
         
         meanMB = np.mean(avererage_area)
         meanMA = np.mean(avererage_area_percentile)
