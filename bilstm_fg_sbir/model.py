@@ -137,11 +137,14 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             target_distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
             distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
             
+            print("distance: ", distance)
+            print("target_distance: ", target_distance)
+            
             rank_all[i_batch] = distance.le(target_distance).sum()
             rank_all_percentile[i_batch] = (len(distance) - rank_all[i_batch]) / (len(distance) - 1)
             
-            print("rank_all[i_batch]: ", rank_all[i_batch])
-            print("len(distance) ", len(distance))
+            # print("rank_all[i_batch]: ", rank_all[i_batch])
+            # print("len(distance) ", len(distance))
             
             avererage_area.append(1/rank_all[i_batch].item() if rank_all[i_batch].item()!=0 else 1)
             avererage_area_percentile.append(rank_all_percentile[i_batch].item() if rank_all_percentile[i_batch].item()!=0 else 1)
