@@ -36,6 +36,10 @@ class SelfAttention(nn.Module):
         # self.mha = nn.MultiheadAttention(2048, num_heads=args.num_heads, batch_first=True)
         self.mha = nn.MultiheadAttention(2048, num_heads=8, batch_first=True)
     
+    def fix_weights(self):
+        for x in self.parameters():
+            x.requires_grad = False  
+            
     def forward(self, x):
         bs, c, h, w = x.shape
         x_att = x.reshape(bs, c, h*w).transpose(1, 2)
