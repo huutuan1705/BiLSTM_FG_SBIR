@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from backbones import VGG16, ResNet50, InceptionV3
 from bilstm import BiLSTM
-from attention import Attention_global, Linear_global
+from attention import Attention_global, Linear_global, SelfAttention
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -28,7 +28,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         # self.bilstm_network.apply(init_weights)
         self.bilstm_params = self.bilstm_network.parameters()
         
-        self.attention = Attention_global()
+        self.attention = SelfAttention(args)
         self.attention.fix_weights()
         
         self.sketch_attention = Attention_global()

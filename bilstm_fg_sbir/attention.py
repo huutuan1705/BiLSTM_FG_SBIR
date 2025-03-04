@@ -29,20 +29,21 @@ class Attention_global(nn.Module):
         return  F.normalize(fatt1)
 
 class SelfAttention(nn.Module):
-    def __init__(self):
+    def __init__(self, args):
         super(SelfAttention, self).__init__()
+        self.pool_method =  nn.AdaptiveMaxPool2d(1) # as default
         self.norm = nn.LayerNorm(2048)
-        self.mha = nn.MultiheadAttention(2048, num_heads=4, batch_first=True)
-        self.pool1d = nn.AdaptiveMaxPool1d(1)
-        self.linear = nn.Linear(2048, 64)
+        # self.mha = nn.MultiheadAttention(2048, num_heads=args.num_heads, batch_first=True)
+        self.mha = nn.MultiheadAttention(2048, num_heads=8, batch_first=True)
     
     def forward(self, x):
-        x = self.norm(x)  
-        att_out, _ = self.mha(x, x, x)  # (bs, 25, 2048)
-        att_out = att_out.permute(0, 2, 1)
-        att_out = self.pool1d(att_out).view(-1, 2048)
-        att_out = F.normalize(att_out)
-        return att_out
+        bs, c, h, w = x.shape
+        x_att = x.reshape(bs, c, h*w).transpose(1, 2)
+        x_att = self.norm(x_att)
+        att_out, _  = self.mha(x_att, x_att, x_att)
+        att_out = att_out.transpose(1, 2).reshape(bs, c, h, w)
+        att_out = self.pool_method(att_out).view(-1, 2048)
+        return F.normalize(att_out)
     
 class Linear_global(nn.Module):
     def __init__(self, feature_num):
