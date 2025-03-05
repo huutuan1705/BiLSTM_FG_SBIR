@@ -50,7 +50,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         loss = 0
         for idx in range(len(batch['sketch_imgs'])):
-            print("batch['sketch_seq'][idx].shape: ", batch['sketch_seq'][idx].shape)
+            print("batch['sketch_imgs'][idx].shape: ", batch['sketch_imgs'][idx].shape)
             # sketch_feature = self.bilstm_network()
         
         
