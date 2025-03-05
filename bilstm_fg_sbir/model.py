@@ -125,7 +125,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             position_query = image_names.index(sketch_query_name)
             
             for i_sketch in range(sampled_batch.shape[0]):
-                sketch_feature = self.bilstm_network(sampled_batch[:i_sketch+1].to(device))
+                sketch_feature = self.bilstm_network(sampled_batch[i_sketch].to(device))
                 target_distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests[position_query].unsqueeze(0).to(device))
                 distance = F.pairwise_distance(sketch_feature[-1].unsqueeze(0).to(device), image_array_tests.to(device))
                 
