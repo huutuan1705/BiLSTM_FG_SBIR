@@ -149,4 +149,4 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         meanMA = np.mean(avererage_area_percentile)
         meanMB = np.mean(avererage_area)
         
-        return top1_accuracy, top5_accuracy, top10_accuracy, meanMB, meanMA
+        return top1_accuracy, top5_accuracy, top10_accuracy, meanMA, meanMB
