@@ -84,6 +84,7 @@ class FGSBIR_Dataset(Dataset):
                 sketch_imgs = self.train_transform(sketch_imgs)
             else:
                 sketch_imgs = [self.train_transform(sk_img) for sk_img in sketch_imgs]
+                sketch_imgs = torch.cat(sketch_imgs)
                 
             sample = {
                 'sketch_imgs': sketch_imgs, 'sketch_path': sketch_path,
