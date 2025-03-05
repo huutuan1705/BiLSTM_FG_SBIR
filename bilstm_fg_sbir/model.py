@@ -89,7 +89,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         image_names = []
         
         for idx, batch in enumerate(tqdm(dataloader_test)):
-            print("batch['sketch_seq'].squeeze(0): ", batch['sketch_seq'].squeeze(0))
+            print("batch['sketch_imgs'].squeeze(0): ", batch['sketch_imgs'].squeeze(0))
             print("batch.shape: ", batch.shape)
             
             
