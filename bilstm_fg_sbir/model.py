@@ -49,10 +49,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.optimizer.zero_grad()
         
         loss = 0
-        print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
+        # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
         for idx in range(len(batch['sketch_imgs'])):
-            print("batch['sketch_imgs'][idx].shape: ", batch['sketch_imgs'][idx].shape) # (25, 3, 299, 299)
-            print("batch['positive_img'][idx].shape: ", batch['positive_img'][idx].shape) # (3, 299, 299)
+            # print("batch['sketch_imgs'][idx].shape: ", batch['sketch_imgs'][idx].shape) # (25, 3, 299, 299)
+            # print("batch['positive_img'][idx].shape: ", batch['positive_img'][idx].shape) # (3, 299, 299)
             sketch_feature = self.bilstm_network(self.attention(
                 self.sample_embedding_network(batch['sketch_imgs'][idx].to(device))
             ))
