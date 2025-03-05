@@ -83,7 +83,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     
     def evaluate(self, dataloader_test):
         self.eval()
-        sketch_array_tests = torch.FloatTensor().to(device)
+        sketch_array_tests = []
         sketch_names = []
         image_array_tests = []
         image_names = []
@@ -102,7 +102,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             sketch_array_tests.append(sketch_features_all.cpu())
         
-        print("sketch_array_tests.shape: ", sketch_array_tests.shape)
+        print("len(sketch_array_tests): ", len(sketch_array_tests))
             
             
             
