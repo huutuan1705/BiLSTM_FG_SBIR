@@ -102,7 +102,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_array_tests.append(sketch_features_all.cpu())
             sketch_names.extend(batch['sketch_path'])
             
-            if batch['postitive_path'][0] not in image_names:
+            if batch['positive_path'][0] not in image_names:
                 positive_feature = self.linear(self.attention(
                     self.sample_embedding_network(batch['positive_img'].to(device))
                 ))
