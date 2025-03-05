@@ -51,9 +51,21 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         loss = 0
         for idx in range(len(batch['sketch_imgs'])):
             # print("batch['sketch_imgs'][idx].shape: ", batch['sketch_imgs'][idx].shape) # (N, 3, 299, 299)
-            print("batch['positive_img'][idx].shape: ", batch['positive_img'][idx].shape)
-            # sketch_feature = self.bilstm_network()
-        
+            # print("batch['positive_img'][idx].shape: ", batch['positive_img'][idx].shape) # (3, 299, 299)
+            sketch_feature = self.bilstm_network(self.attention(
+                self.sample_embedding_network(batch['sketch_imgs'][idx].to(device))
+            ))
+            positive_feature = self.linear(self.attention(
+                self.sample_embedding_network(batch['positive_img'][idx].unsqueeze(0).to(device))
+            ))
+            negative_feature = self.linear(self.attention(
+                self.sample_embedding_network(batch['negative_img'][idx].unsqueeze(0).to(device))
+            ))
+            
+            positive_feature = positive_feature.repeat(sketch_feature.shape[0], 1)
+            negative_feature = negative_feature.repeat(sketch_feature.shape[0], 1)
+            
+            loss += self.loss(sketch_feature, positive_feature, negative_feature)
         
         loss.backward()
         self.optimizer.step()
@@ -73,11 +85,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.eval()
         sketch_array_tests = []
         sketch_names = []
-        image_array_tests = torch.FloatTensor().to(device)
+        image_array_tests = []
         image_names = []
         
         for idx, batch in enumerate(tqdm(dataloader_test)):
+            print("batch['sketch_seq'].squeeze(0): ", batch['sketch_seq'].squeeze(0))
             print("batch.shape: ", batch.shape)
-            sketch_feature_all = torch.FloatTensor().to(device)
+            
             
         
