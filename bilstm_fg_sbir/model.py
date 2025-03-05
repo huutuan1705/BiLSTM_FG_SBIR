@@ -83,14 +83,27 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     
     def evaluate(self, dataloader_test):
         self.eval()
-        sketch_array_tests = []
+        sketch_array_tests = torch.FloatTensor().to(device)
         sketch_names = []
         image_array_tests = []
         image_names = []
         
         for idx, batch in enumerate(tqdm(dataloader_test)):
-            print("batch['sketch_imgs'].squeeze(0): ", batch['sketch_imgs'].squeeze(0))
-            print("batch.shape: ", batch.shape)
+            sketch_features_all = torch.FloatTensor().to(device)
+            for data_sketch in batch['sketch_imgs']:
+                print(data_sketch.shape)
+                sketch_feature = self.attention(
+                    self.sample_embedding_network(data_sketch.to(device))
+                )
+                print("sketch_feature.shape: ", sketch_feature.shape)
+                sketch_features_all = torch.cat((sketch_features_all, sketch_feature.detach()))\
+            
+            print("sketch_feature_ALL.shape: ", sketch_features_all.shape)
+            
+            sketch_array_tests.append(sketch_features_all.cpu())
+        
+        print("sketch_array_tests.shape: ", sketch_array_tests.shape)
+            
             
             
         
