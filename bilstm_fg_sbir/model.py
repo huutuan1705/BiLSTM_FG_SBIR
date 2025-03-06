@@ -50,12 +50,13 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         positive_features = self.linear(self.attention(
             self.sample_embedding_network(batch['positive_img'].to(device))
-        )).unsqueeze(1) # (N, 1, 64)
+        )) # (N, 64)
         negative_features = self.linear(self.attention(
             self.sample_embedding_network(batch['negative_img'].to(device))
-        )).unsqueeze(1) # (N, 1, 64)
+        )) # (N, 64)
         
         loss = 0
+        print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
         for i in range(len(batch['sketch_imgs'])):
             sketch_features = self.attention(
                 self.sample_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
@@ -63,6 +64,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             for i_sketch in range(sketch_features.shape[0]):
                 # print("sketch_features[:i_sketch+1].shape: ", sketch_features[:i_sketch+1].shape)
                 sketch_feature = self.bilstm_network(sketch_features[:i_sketch+1].to(device)).unsqueeze(0)
+                print("positive_features[i].shape: ", positive_features[i].shape)
                 positive_feature = positive_features[i]
                 negative_feature = negative_features[i]
                 
