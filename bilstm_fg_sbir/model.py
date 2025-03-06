@@ -48,36 +48,31 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.train()
         self.optimizer.zero_grad()
         
+        positive_features = self.linear(self.attention(
+            self.sample_embedding_network(batch['positive_img'].to(device))
+        )).unsqueeze(0) # (N, 1, 64)
+        negative_features = self.linear(self.attention(
+            self.sample_embedding_network(batch['negative_img'].to(device))
+        )).unsqueeze(0) # (N, 1, 64)
+        
         loss = 0
-        # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs']))
-        for idx in range(len(batch['sketch_imgs'])):
-            # print("batch['sketch_imgs'][idx].shape: ", batch['sketch_imgs'][idx].shape) # (25, 3, 299, 299)
-            # print("batch['positive_img'][idx].shape: ", batch['positive_img'][idx].shape) # (3, 299, 299)
-            sketch_feature = self.bilstm_network(self.attention(
-                self.sample_embedding_network(batch['sketch_imgs'][idx].to(device))
-            )).unsqueeze(0)
-            positive_feature = self.linear(self.attention(
-                self.sample_embedding_network(batch['positive_img'][idx].unsqueeze(0).to(device))
-            ))
-            negative_feature = self.linear(self.attention(
-                self.sample_embedding_network(batch['negative_img'][idx].unsqueeze(0).to(device))
-            ))
+        for i in range(len(batch['sketch_imgs'])):
+            sketch_features = self.attention(
+                self.sample_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
             
-            loss += self.loss(sketch_feature, positive_feature, negative_feature)
+            for i_sketch in range(sketch_features.shape[0]):
+                print("sketch_features[:i_sketch+1].shape: ", sketch_features[:i_sketch+1].shape)
+                sketch_feature = self.bilstm_network(sketch_features[:i_sketch+1].to(device)).unsqueeze(0)
+                positive_feature = positive_features[i]
+                negative_feature = negative_features[i]
+                
+                loss += self.loss(sketch_feature, positive_feature, negative_feature)
         
         loss.backward()
         self.optimizer.step()
 
         return loss.item() 
     
-    def test_forward(self, batch):            
-        positive_feature = self.sample_embedding_network(batch['positive_img'].to(device))
-        positive_feature = self.linear(self.attention(positive_feature))
-        
-        sketch_feature = self.attention(
-            self.sample_embedding_network(batch['sketch_imgs'].squeeze(0).to(device))) # (25, 2048)
-        
-        return sketch_feature.cpu(), positive_feature.cpu()
     
     def evaluate(self, dataloader_test):
         self.eval()
