@@ -42,7 +42,7 @@ class BiLSTM(nn.Module):
         x, _ = self.bilstm1(x)  
         x, _ = self.bilstm2(x)  
         
-        x = x[-1, :]
+        # x = x[-1, :]
         # x = F.normalize(x)
         return x 
     
