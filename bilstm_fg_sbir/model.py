@@ -67,7 +67,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             positive_feature = positive_features[i]
             negative_feature = negative_features[i]
             
-            loss += self.loss(F.normalize(sketch_feature), positive_feature.unsqueeze(0), negative_feature.unsqueeze(0))
+            loss += self.loss(sketch_feature, positive_feature.unsqueeze(0), negative_feature.unsqueeze(0))
         
         loss.backward()
         self.optimizer.step()
