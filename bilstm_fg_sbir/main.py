@@ -66,11 +66,8 @@ if __name__ == "__main__":
         linear_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_linear.pth")
     
         model.sample_embedding_network.load_state_dict(backbones_state['sample_embedding_network'])
-        model.sketch_embedding_network.load_state_dict(backbones_state['sketch_embedding_network'])
         model.attention.load_state_dict(attention_state['attention'])
-        model.sketch_attention.load_state_dict(attention_state['sketch_attention'])
         model.linear.load_state_dict(linear_state['linear'])
-        model.sketch_linear.load_state_dict(linear_state['sketch_linear'])
     
     step_count, top1, top5, top10, meanA, meanB = -1, 0, 0, 0, 0, 0
     

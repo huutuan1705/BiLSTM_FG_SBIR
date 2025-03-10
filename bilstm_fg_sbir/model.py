@@ -15,10 +15,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     def __init__(self, args):
         super(BiLSTM_FGSBIR_Model, self).__init__()
         self.sample_embedding_network = eval(args.backbone_name + "(args)")
-        self.sketch_embedding_network = eval(args.backbone_name + "(args)")
         self.loss = nn.TripletMarginLoss(margin=args.margin)        
         self.sample_train_params = self.sample_embedding_network.parameters()
-        self.sketch_train_params = self.sketch_embedding_network.parameters()
         self.args = args
         
         self.sample_embedding_network.fix_weights()
@@ -31,14 +29,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.attention = SelfAttention(args)
         self.attention.fix_weights()
         
-        self.sketch_attention = Attention_global()
-        self.sketch_attention.fix_weights()
-        
         self.linear = Linear_global(feature_num=self.args.output_size)
         self.linear.fix_weights()
         
-        self.sketch_linear = Linear_global(feature_num=self.args.output_size)
-        self.sketch_linear.fix_weights()
         
         self.optimizer = optim.Adam([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
