@@ -40,12 +40,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.train()
         self.optimizer.zero_grad()
         
-        positive_features = self.linear(self.attention(
+        positive_features = self.attention(
             self.sample_embedding_network(batch['positive_img'].to(device))
-        )) # (N, 64)
-        negative_features = self.linear(self.attention(
+        ) # (N, 64)
+        negative_features = self.attention(
             self.sample_embedding_network(batch['negative_img'].to(device))
-        )) # (N, 64)
+        ) # (N, 64)
         
         loss = 0
         # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs'])) # 64
@@ -89,9 +89,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_names.extend(batch['sketch_path'])
             
             if batch['positive_path'][0] not in image_names:
-                positive_feature = self.linear(self.attention(
-                    self.sample_embedding_network(batch['positive_img'].to(device))
-                ))
+                positive_feature = self.attention(
+                    self.sample_embedding_network(batch['positive_img'].to(device)))
                 image_array_tests = torch.cat((image_array_tests, positive_feature))
                 image_names.extend(batch['positive_path'])
                 
