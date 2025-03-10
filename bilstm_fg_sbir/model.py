@@ -20,7 +20,6 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.args = args
         
         self.sample_embedding_network.fix_weights()
-        self.sketch_embedding_network.fix_weights()
             
         self.bilstm_network = BiLSTM(args=args, input_size=2048).to(device)
         # self.bilstm_network.apply(init_weights)
