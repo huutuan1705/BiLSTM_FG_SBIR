@@ -32,7 +32,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.linear.fix_weights()
         
         
-        self.optimizer = optim.Adam([
+        self.optimizer = optim.Adagrad([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
         ])
         
