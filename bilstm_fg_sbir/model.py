@@ -43,17 +43,17 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.train()
         self.optimizer.zero_grad()
         
-        positive_features = self.attention(
+        positive_features = self.linear(self.attention(
             self.sample_embedding_network(batch['positive_img'].to(device))
-        ) # (N, 64)
-        negative_features = self.attention(
+        )) # (N, 64)
+        negative_features = self.linear(self.attention(
             self.sample_embedding_network(batch['negative_img'].to(device))
-        ) # (N, 64)
+        )) # (N, 64)
         
         loss = 0
         # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs'])) # 64
         for i in range(len(batch['sketch_imgs'])):
-            sketch_features = self.attention(
+            sketch_features = self.sketch_attention(
                 self.sketch_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
             
             # print("sketch_features[:i_sketch+1].shape: ", sketch_features[:i_sketch+1].shape)
@@ -81,7 +81,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features_all = torch.FloatTensor().to(device)
             for data_sketch in batch['sketch_imgs']:
                 # print(data_sketch.shape) # (1, 3, 299, 299)
-                sketch_feature = self.attention(
+                sketch_feature = self.sketch_attention(
                     self.sketch_embedding_network(data_sketch.to(device))
                 )
                 # print("sketch_feature.shape: ", sketch_feature.shape) #(1, 2048)
@@ -92,8 +92,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_names.extend(batch['sketch_path'])
             
             if batch['positive_path'][0] not in image_names:
-                positive_feature = self.attention(
-                    self.sample_embedding_network(batch['positive_img'].to(device)))
+                positive_feature = self.linear(self.attention(
+                    self.sample_embedding_network(batch['positive_img'].to(device))))
                 image_array_tests = torch.cat((image_array_tests, positive_feature))
                 image_names.extend(batch['positive_path'])
                 
