@@ -31,6 +31,7 @@ if __name__ == "__main__":
                         help='AdaptiveMaxPool2d / AdaptiveAvgPool2d / AvgPool2d')
     parsers.add_argument('--output_size', type=int, default=64)
     parsers.add_argument('--num_layers', type=int, default=1)
+    parsers.add_argument('--num_heads', type=int, default=4)
     parsers.add_argument('--hidden_size', type=int, default=1024)
     parsers.add_argument('--num_bilstm_blocks', type=int, default=2)
     parsers.add_argument('--root_dir', type=str, default='./../')
