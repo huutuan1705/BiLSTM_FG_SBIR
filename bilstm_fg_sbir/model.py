@@ -15,11 +15,12 @@ class BiLSTM_FGSBIR_Model(nn.Module):
     def __init__(self, args):
         super(BiLSTM_FGSBIR_Model, self).__init__()
         self.sample_embedding_network = eval(args.backbone_name + "(args)")
+        self.sketch_embedding_network = eval(args.backbone_name + "(args)")
         self.loss = nn.TripletMarginLoss(margin=args.margin)        
-        self.sample_train_params = self.sample_embedding_network.parameters()
         self.args = args
         
         self.sample_embedding_network.fix_weights()
+        self.sketch_embedding_network.fix_weights()
             
         self.bilstm_network = BiLSTM(args=args, input_size=2048).to(device)
         # self.bilstm_network.apply(init_weights)
@@ -27,6 +28,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         
         self.attention = SelfAttention(args)
         self.attention.fix_weights()
+        self.sketch_attention = SelfAttention(args)
+        self.sketch_attention.fix_weights()
         
         self.linear = Linear_global(feature_num=self.args.output_size)
         self.linear.fix_weights()
@@ -51,7 +54,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         # print("len(batch['sketch_imgs']): ", len(batch['sketch_imgs'])) # 64
         for i in range(len(batch['sketch_imgs'])):
             sketch_features = self.attention(
-                self.sample_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
+                self.sketch_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
             
             # print("sketch_features[:i_sketch+1].shape: ", sketch_features[:i_sketch+1].shape)
             sketch_feature = self.bilstm_network(sketch_features).unsqueeze(0)
@@ -79,7 +82,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             for data_sketch in batch['sketch_imgs']:
                 # print(data_sketch.shape) # (1, 3, 299, 299)
                 sketch_feature = self.attention(
-                    self.sample_embedding_network(data_sketch.to(device))
+                    self.sketch_embedding_network(data_sketch.to(device))
                 )
                 # print("sketch_feature.shape: ", sketch_feature.shape) #(1, 2048)
                 sketch_features_all = torch.cat((sketch_features_all, sketch_feature.detach()))
