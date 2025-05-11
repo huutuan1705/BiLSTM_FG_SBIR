@@ -1,7 +1,6 @@
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
-from attention import SelfAttention, Linear_global
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -44,6 +43,6 @@ class BiLSTM(nn.Module):
         return x 
     
 # model = BiLSTM(None)
-# x = torch.randn(3, 2048)
+# x = torch.randn(3, 25, 2048)
 # x = model(x)
-# print(x.shape)
+# print(x.shape) #(3, 25, 64)

@@ -35,7 +35,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.linear.fix_weights()
         
         
-        self.optimizer = optim.Adagrad([
+        self.optimizer = optim.AdamW([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
         ])
         
@@ -56,7 +56,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features = self.sketch_attention(
                 self.sketch_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
             
-            # print("sketch_features[:i_sketch+1].shape: ", sketch_features[:i_sketch+1].shape)
+            print("sketch_features.shape: ", sketch_features.shape)
             sketch_feature = self.bilstm_network(sketch_features)
             # print("positive_features[i].shape: ", positive_features[i].shape) # (64, )
             positive_feature = positive_features[i]
