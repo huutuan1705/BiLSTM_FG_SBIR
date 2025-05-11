@@ -57,7 +57,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 self.sketch_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
             
             # print("sketch_features[:i_sketch+1].shape: ", sketch_features[:i_sketch+1].shape)
-            sketch_feature = self.bilstm_network(sketch_features).unsqueeze(0)
+            sketch_feature = self.bilstm_network(sketch_features)
             # print("positive_features[i].shape: ", positive_features[i].shape) # (64, )
             positive_feature = positive_features[i]
             negative_feature = negative_features[i]
