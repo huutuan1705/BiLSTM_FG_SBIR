@@ -20,7 +20,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.args = args
         
         def init_weights(m):
-            if type(m) == nn.Linear or type(m) == nn.LSTM:
+            if type(m) == nn.Linear or type(m) == nn.Conv2d:
                 nn.init.kaiming_normal_(m.weight)
                 
         self.sample_embedding_network.fix_weights()
