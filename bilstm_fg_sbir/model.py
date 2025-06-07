@@ -22,7 +22,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.sample_embedding_network.fix_weights()
         self.sketch_embedding_network.fix_weights()
             
-        self.bilstm_network = BiLSTM(args=args, input_size=2048).to(device)
+        self.bilstm_network = BiLSTM(args=args).to(device)
         # self.bilstm_network.apply(init_weights)
         self.bilstm_params = self.bilstm_network.parameters()
         
@@ -56,7 +56,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features = self.sketch_attention(
                 self.sketch_embedding_network(batch['sketch_imgs'][i].to(device))) # (25, 2048)
             
-            # print("sketch_features.shape: ", sketch_features.shape) 
+            print("sketch_features.shape: ", sketch_features.shape) 
             sketch_feature = self.bilstm_network(sketch_features)
             # print("positive_features[i].shape: ", positive_features[i].shape) # (64, )
             positive_feature = positive_features[i]

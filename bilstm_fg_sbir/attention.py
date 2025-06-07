@@ -4,30 +4,6 @@ import torch.nn.functional as F
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class Attention_global(nn.Module):
-    def __init__(self):
-        super(Attention_global, self).__init__()
-        self.pool_method =  nn.AdaptiveMaxPool2d(1) # as default
-        self.net = nn.Sequential(nn.Conv2d(2048, 1024, kernel_size=1),
-                                 nn.BatchNorm2d(1024),
-                                 nn.ReLU(),
-                                 nn.Conv2d(1024, 1, kernel_size=1))
-        
-    def fix_weights(self):
-        for x in self.parameters():
-            x.requires_grad = False   
-            
-    def forward(self, backbone_tensor):
-        identify = backbone_tensor
-        backbone_tensor_1 = self.net(backbone_tensor)
-        backbone_tensor_1 = backbone_tensor_1.view(backbone_tensor_1.size(0), -1)
-        backbone_tensor_1 = nn.Softmax(dim=1)(backbone_tensor_1)
-        backbone_tensor_1 = backbone_tensor_1.view(backbone_tensor_1.size(0), 1, backbone_tensor.size(2), backbone_tensor.size(3))
-        fatt = identify*backbone_tensor_1
-        fatt1 = identify +fatt
-        fatt1 = self.pool_method(fatt1).view(-1, 2048)
-        return  F.normalize(fatt1)
-
 class SelfAttention(nn.Module):
     def __init__(self, args):
         super(SelfAttention, self).__init__()
