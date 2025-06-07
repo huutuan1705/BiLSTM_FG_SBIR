@@ -115,7 +115,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features = F.normalize(sketch_features)
             
             for i_sketch in range(sampled_batch.shape[0]):
-                print("sketch_features[i_sketch].shape: ", sketch_features[i_sketch].shape)
+                # print("sketch_features[i_sketch].shape: ", sketch_features[i_sketch].shape)
                 sketch_feature = sketch_features[i_sketch]
                 target_distance = F.pairwise_distance(sketch_feature.to(device), image_array_tests[position_query].to(device))
                 distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
