@@ -61,7 +61,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             positive_feature = positive_features[i]
             negative_feature = negative_features[i]
             
-            loss += self.loss(F.normalize(sketch_feature), positive_feature.unsqueeze(0), negative_feature.unsqueeze(0))
+            loss += self.loss(sketch_feature, positive_feature.unsqueeze(0), negative_feature.unsqueeze(0))
         
         loss.backward()
         self.optimizer.step()
@@ -112,7 +112,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             sketch_features = self.bilstm_network(sampled_batch.to(device))
-            sketch_features = F.normalize(sketch_features)
+            # sketch_features = F.normalize(sketch_features)
             
             for i_sketch in range(sampled_batch.shape[0]):
                 # print("sketch_features[i_sketch].shape: ", sketch_features[i_sketch].shape)
