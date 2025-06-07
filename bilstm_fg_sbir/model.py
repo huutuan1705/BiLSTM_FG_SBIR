@@ -19,12 +19,15 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.loss = nn.TripletMarginLoss(margin=args.margin)        
         self.args = args
         
+        def init_weights(m):
+            if type(m) == nn.Linear or type(m) == nn.LSTM:
+                nn.init.kaiming_normal_(m.weight)
+                
         self.sample_embedding_network.fix_weights()
         self.sketch_embedding_network.fix_weights()
             
         self.bilstm_network = BiLSTM(args=args).to(device)
-        # self.bilstm_network.apply(init_weights)
-        self.bilstm_params = self.bilstm_network.parameters()
+        self.bilstm_network.apply(init_weights)
         
         self.attention = SelfAttention(args)
         self.attention.fix_weights()
