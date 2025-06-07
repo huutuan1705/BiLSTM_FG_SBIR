@@ -86,7 +86,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 # print("sketch_feature.shape: ", sketch_feature.shape) #(25, 2048)
                 sketch_features_all = torch.cat((sketch_features_all, sketch_feature.detach()))
             
-            print("sketch_feature_ALL.shape: ", sketch_features_all.shape) # (25, 2048)           
+            # print("sketch_feature_ALL.shape: ", sketch_features_all.shape) # (25, 2048)           
             sketch_array_tests.append(sketch_features_all.cpu())
             sketch_names.extend(batch['sketch_path'])
             
@@ -96,7 +96,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 image_array_tests = torch.cat((image_array_tests, positive_feature))
                 image_names.extend(batch['positive_path'])
         
-        print("sketch_array_tests[0].shape", sketch_array_tests[0].shape) #(25, 2048)
+        # print("sketch_array_tests[0].shape", sketch_array_tests[0].shape) #(25, 2048)
         num_steps = len(sketch_array_tests[0])
         avererage_area = []
         avererage_area_percentile = []
