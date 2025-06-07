@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from backbones import VGG16, ResNet50, InceptionV3
 from bilstm import BiLSTM
-from attention import Attention_global, Linear_global, SelfAttention
+from attention import Linear_global, SelfAttention
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -58,7 +58,6 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             print("sketch_features.shape: ", sketch_features.shape) 
             sketch_feature = self.bilstm_network(sketch_features)
-            # print("positive_features[i].shape: ", positive_features[i].shape) # (64, )
             positive_feature = positive_features[i]
             negative_feature = negative_features[i]
             
@@ -84,10 +83,10 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 sketch_feature = self.sketch_attention(
                     self.sketch_embedding_network(data_sketch.to(device))
                 )
-                # print("sketch_feature.shape: ", sketch_feature.shape) #(1, 2048)
+                print("sketch_feature.shape: ", sketch_feature.shape) #(1, 2048)
                 sketch_features_all = torch.cat((sketch_features_all, sketch_feature.detach()))
             
-            # print("sketch_feature_ALL.shape: ", sketch_features_all.shape) # (25, 2048)           
+            print("sketch_feature_ALL.shape: ", sketch_features_all.shape) # (25, 2048)           
             sketch_array_tests.append(sketch_features_all.cpu())
             sketch_names.extend(batch['sketch_path'])
             
@@ -97,7 +96,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
                 image_array_tests = torch.cat((image_array_tests, positive_feature))
                 image_names.extend(batch['positive_path'])
         
-        # print(sketch_array_tests[0].shape) #(25, 2048)
+        print(sketch_array_tests[0].shape) #(25, 2048)
         num_steps = len(sketch_array_tests[0])
         avererage_area = []
         avererage_area_percentile = []
@@ -116,7 +115,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_features = F.normalize(sketch_features)
             
             for i_sketch in range(sampled_batch.shape[0]):
-                # print("sampled_batch[:i_sketch+1].shape: ", sampled_batch[:i_sketch+1].shape)
+                print("sketch_features[i_sketch].shape: ", sketch_features[i_sketch].shape)
                 sketch_feature = sketch_features[i_sketch]
                 target_distance = F.pairwise_distance(sketch_feature.to(device), image_array_tests[position_query].to(device))
                 distance = F.pairwise_distance(sketch_feature.unsqueeze(0).to(device), image_array_tests.to(device))
