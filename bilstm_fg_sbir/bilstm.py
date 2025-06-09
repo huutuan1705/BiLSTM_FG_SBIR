@@ -5,7 +5,7 @@ import torch.nn.functional as F
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class BiLSTM(nn.Module):
-    def __init__(self, args, input_dim=2048, hidden_dim=512, output_dim=64, num_layers=1, dropout=0.2):
+    def __init__(self, args, input_dim=2048, hidden_dim=1024, output_dim=64, num_layers=2, dropout=0.1):
         super(BiLSTM, self).__init__()
 
         self.bi_lstm = nn.LSTM(
