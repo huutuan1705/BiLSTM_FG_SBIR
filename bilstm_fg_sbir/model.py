@@ -38,6 +38,8 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.linear.fix_weights()
         
         self.sketch_linear = Linear_global(feature_num=self.args.output_size)
+        self.sketch_linear.fix_weights()
+        
         self.optimizer = optim.Adam([
             {'params': self.sample_embedding_network.parameters(), 'lr': args.lr},
             {'params': self.sketch_embedding_network.parameters(), 'lr': args.lr},
@@ -62,6 +64,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             
             # print("sketch_features.shape: ", sketch_features.shape) # (25, 2048)
             sketch_feature = self.bilstm_network(sketch_features)
+            sketch_feature = self.sketch_linear(sketch_feature)
             positive_feature = positive_features[i]
             negative_feature = negative_features[i]
             
