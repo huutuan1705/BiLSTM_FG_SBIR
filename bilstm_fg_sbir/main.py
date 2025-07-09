@@ -62,7 +62,7 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load(args.pretrained_dir + "/" + args.dataset_name + '_best.pth'))
     
     if args.load_pretrained_best==False:
-        backbones_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_backbone.pth")
+        backbones_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_bacbkbone.pth")
         attention_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_attention.pth")
         linear_state = torch.load(args.pretrained_dir + "/" + args.dataset_name + "_linear.pth")
     
