@@ -119,7 +119,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
             sketch_query_name = '_'.join(sketch_name.split('/')[-1].split('_')[:-1])
             position_query = image_names.index(sketch_query_name)
             sketch_features = self.bilstm_network(sampled_batch.to(device))
-            # sketch_features = F.normalize(sketch_features)
+            sketch_features = self.sketch_linear(sketch_features)
             
             for i_sketch in range(sampled_batch.shape[0]):
                 # print("sketch_features[i_sketch].shape: ", sketch_features[i_sketch].shape)
