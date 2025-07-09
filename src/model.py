@@ -37,10 +37,18 @@ class BiLSTM_SBIR(nn.Module):
         negative_feature = self.linear(self.attention(self.sample_embedding_network(negative_img)))
         
         B, N, C, H, W = sketch_imgs.shape
-        sketch_imgs_reshaped = sketch_imgs.view(B * N, C, H, W)
-        sketch_features = self.sketch_attention(self.sketch_embedding_network(sketch_imgs_reshaped))
-        sketch_features = sketch_features.view(B, N, -1)
-        
+        sketch_features = []
+
+        for b in range(B):
+            # [N, C, H, W]
+            sketches = sketch_imgs[b]
+            # [N, D]
+            features = self.sketch_embedding_network(sketches)  
+            features = self.sketch_attention(features)          
+            sketch_features.append(features)
+
+        # [B, N, D]
+        sketch_features = torch.stack(sketch_features, dim=0)
         sketch_features = self.sketch_linear(self.bilstm(sketch_features))
         
         return positive_feature, negative_feature, sketch_features
