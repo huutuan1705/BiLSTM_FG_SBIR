@@ -40,7 +40,7 @@ class BiLSTM(nn.Module):
         attn_scores = self.attention_fc(lstm_out2)  # (batch, seq_len, 1)
         attn_weights = torch.softmax(attn_scores, dim=1)  # normalize over sequence length
 
-        context_vector = attn_weights * lstm_out2  # (batch, seq_len, hidden_dim*2)
+        context_vector = attn_weights * lstm_out2 + lstm_out2 # (batch, seq_len, hidden_dim*2)
 
         return F.normalize(context_vector)
 
