@@ -5,44 +5,19 @@ import torch.nn.functional as F
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class BiLSTM(nn.Module):
-    def __init__(self, args, input_dim=2048, hidden_dim=512, output_dim=64, dropout=0.1):
+    def __init__(self, input_size=2048):
         super(BiLSTM, self).__init__()
-
-        self.bi_lstm1 = nn.LSTM(
-            input_size=input_dim,
-            hidden_size=hidden_dim,
-            batch_first=True,
-            dropout=dropout,
-            bidirectional=True
-        )
         
-        self.bi_lstm2 = nn.LSTM(
-            input_size=hidden_dim*2,
-            hidden_size=32,
-            batch_first=True,
-            dropout=dropout,
-            bidirectional=True
-        )
-
-        # Attention layer
-        self.attention_fc = nn.Linear(64, 1)
-
-
-    def forward(self, sketch_seq):
-        """
-        sketch_seq: Tensor of shape (batch_size, seq_len, input_dim)
-        """
-        # Bi-LSTM output
-        lstm_out1, _ = self.bi_lstm1(sketch_seq)  # shape: (batch, seq_len, hidden_dim*2)
-        lstm_out2, _ = self.bi_lstm2(lstm_out1)
-
-        # Compute attention scores
-        attn_scores = self.attention_fc(lstm_out2)  # (batch, seq_len, 1)
-        attn_weights = torch.softmax(attn_scores, dim=1)  # normalize over sequence length
-
-        context_vector = attn_weights * lstm_out2 + lstm_out2 # (batch, seq_len, hidden_dim*2)
-
-        return F.normalize(context_vector)
+        self.bilstm1 = nn.LSTM(input_size=input_size, hidden_size=input_size//2, batch_first=True, bidirectional=True, dropout=0.2)
+        self.bilstm2 = nn.LSTM(input_size=input_size, hidden_size=input_size//2, batch_first=True, bidirectional=True, dropout=0.2)
+    
+    def forward(self, x):
+        identify = x
+        x, _ = self.bilstm1(x)
+        x, _ = self.bilstm2(x)
+        
+        output = identify + x
+        return F.normalize(output)
 
     
 # class BiLSTM(nn.Module):

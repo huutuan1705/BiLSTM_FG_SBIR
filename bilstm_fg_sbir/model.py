@@ -26,7 +26,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.sample_embedding_network.fix_weights()
         self.sketch_embedding_network.fix_weights()
             
-        self.bilstm_network = BiLSTM(args=args).to(device)
+        self.bilstm_network = BiLSTM().to(device)
         self.bilstm_network.apply(init_weights)
         
         self.attention = SelfAttention(args)
@@ -38,8 +38,9 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.linear.fix_weights()
         
         self.sketch_linear = Linear_global(feature_num=self.args.output_size)
-        self.optimizer = optim.AdamW([
-            {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
+        self.optimizer = optim.Adam([
+            {'params': self.sample_embedding_network.parameters(), 'lr': args.lr},
+            {'params': self.sketch_embedding_network.parameters(), 'lr': args.lr},
         ])
         
     def train_model(self, batch):
