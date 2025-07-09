@@ -37,7 +37,7 @@ class BiLSTM_FGSBIR_Model(nn.Module):
         self.linear = Linear_global(feature_num=self.args.output_size)
         self.linear.fix_weights()
         
-        
+        self.sketch_linear = Linear_global(feature_num=self.args.output_size)
         self.optimizer = optim.AdamW([
             {'params': self.bilstm_network.parameters(), 'lr': args.learning_rate},
         ])
